@@ -1,10 +1,14 @@
 import { Outlet } from "react-router-dom";
+import Navbar from "../components/Navbar";
 
 export default function AppLayout() {
   return (
-    <div style={{ display: "flex" }}>
-      <aside style={{ width: "200px", background: "#eee" }}>Sidebar</aside>
-      <main style={{ padding: "2rem", flex: 1 }}>
+    <div>
+      {/* Top Navigation Bar */}
+      <Navbar />
+
+      {/* Main Content */}
+      <main style={{ padding: "2rem" }}>
         <Outlet />
       </main>
     </div>

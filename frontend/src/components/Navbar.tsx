@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Home, Package, Settings, Plus, Menu, X, User, LogOut } from 'lucide-react';
 import './Navbar.css';
 
@@ -27,6 +27,34 @@ const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.user-menu')) {
+        setIsDropdownOpen(false);
+      }
+      if (!target.closest('.navbar') && !target.closest('.mobile-menu')) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close mobile menu on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -77,13 +105,23 @@ const Navbar: React.FC<NavbarProps> = ({
                 Add Item
               </button>
               <div className="user-menu">
-                <button className="user-avatar" onClick={toggleDropdown}>
+                <button 
+                  className="user-avatar" 
+                  onClick={toggleDropdown}
+                  aria-label="User menu"
+                  aria-expanded={isDropdownOpen}
+                >
                   {userInitials}
                 </button>
-                <div className={`dropdown ${isDropdownOpen ? 'open' : ''}`}>
+                <div 
+                  className={`dropdown ${isDropdownOpen ? 'open' : ''}`}
+                  role="menu"
+                  aria-hidden={!isDropdownOpen}
+                >
                   <a 
                     href="#" 
                     className="dropdown-item"
+                    role="menuitem"
                     onClick={(e) => {
                       e.preventDefault();
                       handleDropdownItemClick(onProfile);
@@ -95,6 +133,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   <a 
                     href="#" 
                     className="dropdown-item"
+                    role="menuitem"
                     onClick={(e) => {
                       e.preventDefault();
                       handleDropdownItemClick(onSettings);
@@ -103,10 +142,11 @@ const Navbar: React.FC<NavbarProps> = ({
                     <Settings size={16} />
                     Settings
                   </a>
-                  <div className="dropdown-separator"></div>
+                  <div className="dropdown-separator" role="separator"></div>
                   <a 
                     href="#" 
                     className="dropdown-item"
+                    role="menuitem"
                     onClick={(e) => {
                       e.preventDefault();
                       handleDropdownItemClick(onLogout);
@@ -120,7 +160,7 @@ const Navbar: React.FC<NavbarProps> = ({
             </>
           ) : (
             <>
-              <a href="/signin" className="btn-secondary" onClick={onSignIn}>
+              <a href="/login" className="btn-secondary" onClick={onSignIn}>
                 Sign In
               </a>
               <a href="/register" className="btn-primary" onClick={onRegister}>
@@ -130,10 +170,33 @@ const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        <button className="mobile-menu-toggle" onClick={toggleMobileMenu}>
+        <button 
+          className="mobile-menu-toggle" 
+          onClick={toggleMobileMenu}
+          aria-label="Toggle mobile menu"
+          aria-expanded={isMobileMenuOpen}
+        >
           {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </nav>
+
+      {/* Mobile overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="mobile-overlay" 
+          onClick={closeMobileMenu}
+          style={{
+            position: 'fixed',
+            top: '72px',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 1400,
+            backdropFilter: 'blur(2px)'
+          }}
+        />
+      )}
 
       <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="mobile-nav-links">

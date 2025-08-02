@@ -62,9 +62,20 @@ const LoginForm: React.FC = () => {
     user.authenticateUser(authDetails, {
       onSuccess: (session) => {
         console.log('Login success:', session);
-        // Optional: store tokens
+        const accessToken = session.getAccessToken().getJwtToken();
         const idToken = session.getIdToken().getJwtToken();
-        localStorage.setItem('keeply_id_token', idToken);
+        const refreshToken = session.getRefreshToken().getToken();
+        const sub = session.getIdToken().decodePayload()['sub'];
+
+        const tokenData = {
+          accessToken,
+          idToken,
+          refreshToken,
+          sub,
+        };
+
+        localStorage.setItem('keeply_token', JSON.stringify(tokenData));
+
 
         setTimeout(() => navigate('/'), 1000);
       },

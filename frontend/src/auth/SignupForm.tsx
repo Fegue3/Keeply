@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate} from 'react-router-dom';
-import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff,Calendar, UserCircle  } from 'lucide-react';
 import './SignupForm.css';
 import './LoginForm.css';
 import UserPool from './UserPool';
@@ -117,28 +117,40 @@ const SignupForm: React.FC = () => {
           {errors.password && <span className="keeply-error-message">{errors.password}</span>}
         </div>
 
-        <InputField label="Birthdate" name="birthdate" type="date" value={formData.birthdate} onChange={handleInputChange} error={errors.birthdate} disabled={isLoading} />
+        <InputField
+            label="Birthdate"
+            name="birthdate"
+            type="date"
+            icon={<Calendar />}
+            value={formData.birthdate}
+            onChange={handleInputChange}
+            error={errors.birthdate}
+            disabled={isLoading}
+          />
+
 
         <div className="keeply-form-group">
-          <label htmlFor="gender" className="keeply-label">Gender</label>
-          <div className="keeply-input-container">
-            <select
-              id="gender"
-              name="gender"
-              value={formData.gender}
-              onChange={handleInputChange}
-              className={`keeply-input ${errors.gender ? 'error' : ''}`}
-              disabled={isLoading}
-            >
-              <option value="">Select gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-              <option value="prefer_not_to_say">Prefer not to say</option>
-            </select>
-          </div>
-          {errors.gender && <span className="keeply-error-message">{errors.gender}</span>}
+            <label htmlFor="gender" className="keeply-label">Gender</label>
+            <div className="keeply-input-container">
+              <span className="keeply-input-icon"><UserCircle /></span>
+              <select
+                id="gender"
+                name="gender"
+                value={formData.gender}
+                onChange={handleInputChange}
+                className={`keeply-input ${errors.gender ? 'error' : ''}`}
+                disabled={isLoading}
+              >
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+                <option value="prefer_not_to_say">Prefer not to say</option>
+              </select>
+            </div>
+            {errors.gender && <span className="keeply-error-message">{errors.gender}</span>}
         </div>
+
 
         <button type="submit" className="keeply-button" disabled={isLoading}>
           {isLoading ? 'Creating account...' : 'Create Account'}

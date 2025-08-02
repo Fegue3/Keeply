@@ -11,7 +11,18 @@ const Navbar: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // 🔄 Atualiza com dados locais se existirem
+  const loadLocalUserData = () => {
+    const storedName = localStorage.getItem('keeply_user_name');
+    const storedInitials = localStorage.getItem('keeply_user_initials');
+
+    if (storedName) setUserName(storedName);
+    if (storedInitials) setUserInitials(storedInitials);
+  };
+
   useEffect(() => {
+    loadLocalUserData();
+
     const token = getAuthToken();
 
     if (token && isAuthenticated()) {
@@ -33,16 +44,36 @@ const Navbar: React.FC = () => {
             attrMap[attr.getName()] = attr.getValue();
           });
 
-          setUserName(attrMap.name || 'User');
-          setUserInitials(
+          const name = attrMap.name || 'User';
+          const initials =
             attrMap['custom:initials'] ||
-            (attrMap.name ? attrMap.name[0]?.toUpperCase() : 'U')
-          );
+            (name ? name[0]?.toUpperCase() : 'U');
 
+          setUserName(name);
+          setUserInitials(initials);
           setIsLoggedIn(true);
+
+          // Atualiza localStorage para persistência
+          localStorage.setItem('keeply_user_name', name);
+          localStorage.setItem('keeply_user_initials', initials);
         });
       });
     }
+
+    // 📣 Listener do evento de atualização vindo do AccountSettings
+    const handleUserUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { name, initials } = customEvent.detail || {};
+
+      if (name) setUserName(name);
+      if (initials) setUserInitials(initials);
+    };
+
+    window.addEventListener('keeply:userUpdated', handleUserUpdated);
+
+    return () => {
+      window.removeEventListener('keeply:userUpdated', handleUserUpdated);
+    };
   }, []);
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
@@ -51,6 +82,8 @@ const Navbar: React.FC = () => {
 
   const logout = () => {
     localStorage.removeItem('keeply_token');
+    localStorage.removeItem('keeply_user_name');
+    localStorage.removeItem('keeply_user_initials');
     const currentUser = UserPool.getCurrentUser();
     if (currentUser) currentUser.signOut();
 

@@ -6,10 +6,7 @@ import { CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
 import UserPool from './UserPool';
 
 const LoginForm: React.FC = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -26,17 +23,14 @@ const LoginForm: React.FC = () => {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-
     if (!formData.email) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email';
     }
-
     if (!formData.password) {
       newErrors.password = 'Password is required';
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -44,7 +38,6 @@ const LoginForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-
     if (!validateForm()) return;
 
     setIsLoading(true);
@@ -61,23 +54,36 @@ const LoginForm: React.FC = () => {
 
     user.authenticateUser(authDetails, {
       onSuccess: (session) => {
-        console.log('Login success:', session);
         const accessToken = session.getAccessToken().getJwtToken();
         const idToken = session.getIdToken().getJwtToken();
         const refreshToken = session.getRefreshToken().getToken();
         const sub = session.getIdToken().decodePayload()['sub'];
 
-        const tokenData = {
-          accessToken,
-          idToken,
-          refreshToken,
-          sub,
-        };
+        // Obter os atributos do utilizador
+        user.getUserAttributes((err, attributes) => {
+          if (err || !attributes) {
+            console.error('Failed to load attributes:', err);
+          }
 
-        localStorage.setItem('keeply_token', JSON.stringify(tokenData));
+          const attrMap: Record<string, string> = {};
+          attributes?.forEach(attr => {
+            attrMap[attr.getName()] = attr.getValue();
+          });
 
+          const tokenData = {
+            accessToken,
+            idToken,
+            refreshToken,
+            sub,
+            name: attrMap.name || '',
+            initials: attrMap['custom:initials'] || '',
+            picture: attrMap['custom:picture'] || ''
+          };
 
-        setTimeout(() => navigate('/'), 1000);
+          localStorage.setItem('keeply_token', JSON.stringify(tokenData));
+
+          setTimeout(() => navigate('/'), 1000);
+        });
       },
       onFailure: (err) => {
         setIsLoading(false);

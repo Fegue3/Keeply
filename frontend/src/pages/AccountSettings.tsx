@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import {User, Users, Camera } from 'lucide-react';
+import { User, Users, Camera, Calendar, Info } from 'lucide-react';
 import './AccountSettings.css';
 import UserPool from '../auth/UserPool';
-import { CognitoUserAttribute } from 'amazon-cognito-identity-js';
+import { CognitoUserAttribute, CognitoUserSession } from 'amazon-cognito-identity-js';
 
 const AccountSettings = () => {
   const [formData, setFormData] = useState({
@@ -18,13 +18,21 @@ const AccountSettings = () => {
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState('');
 
+  const roles = [
+    { label: 'Parent', value: 'parent' },
+    { label: 'Child', value: 'child' },
+    { label: 'Guardian', value: 'guardian' },
+    { label: 'Admin', value: 'admin' },
+    { label: 'Member', value: 'member' }
+  ];
+
   useEffect(() => {
     const user = UserPool.getCurrentUser();
     if (user) {
-      user.getSession((err: unknown, session: any) => {
+      user.getSession((err: Error | null, session: CognitoUserSession | null) => {
         if (err || !session?.isValid()) return;
 
-        user.getUserAttributes((err: unknown, attributes: CognitoUserAttribute[] | undefined) => {
+        user.getUserAttributes((err: any | null, attributes: CognitoUserAttribute[] | undefined) => {
           if (err || !attributes) return;
           const userData: Record<string, string> = {};
           attributes.forEach(attr => {
@@ -40,7 +48,8 @@ const AccountSettings = () => {
             role: userData['custom:role'] || ''
           });
 
-          setInitials(getInitials(userData.name || ''));
+          const initials = getInitials(userData.name || '');
+          setInitials(initials);
           setLoading(false);
         });
       });
@@ -49,7 +58,9 @@ const AccountSettings = () => {
 
   const getInitials = (name: string) => {
     const parts = name.trim().split(' ');
-    return parts.length > 1 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : name[0].toUpperCase();
+    return parts.length > 1
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : name[0].toUpperCase();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -69,15 +80,32 @@ const AccountSettings = () => {
       new CognitoUserAttribute({ Name: 'custom:role', Value: formData.role })
     ];
 
-    user.getSession((err: unknown, session: any) => {
+    user.getSession((err: Error | null, session: CognitoUserSession | null) => {
       if (err || !session?.isValid()) return;
 
-      user.updateAttributes(attributeList, (err: unknown) => {
+      user.updateAttributes(attributeList, (err: any | null) => {
         if (err) {
           console.error('Update failed', err);
         } else {
           setSuccess('Changes saved successfully!');
-          setInitials(getInitials(formData.firstName));
+
+          const updatedInitials = getInitials(formData.firstName);
+          setInitials(updatedInitials);
+
+          // 🔐 Gravar em localStorage
+          localStorage.setItem('keeply_user_name', formData.firstName);
+          localStorage.setItem('keeply_user_initials', updatedInitials);
+          // localStorage.setItem('keeply_user_photo', ''); // futuro
+
+          // 📣 Notificar a Navbar
+          window.dispatchEvent(new CustomEvent('keeply:userUpdated', {
+            detail: {
+              name: formData.firstName,
+              initials: updatedInitials,
+              // photoUrl: '' // se usares imagem
+            }
+          }));
+
           setTimeout(() => setSuccess(''), 3000);
         }
       });
@@ -88,7 +116,6 @@ const AccountSettings = () => {
 
   return (
     <div className="settings-container">
-
       <div className="keeply-container">
         <main className="settings-main">
           <div className="settings-header">
@@ -106,7 +133,10 @@ const AccountSettings = () => {
           </div>
 
           <div className="form-section">
-            <h2 className="section-title"><User size={20} /> Personal Information</h2>
+            <h2 className="section-title">
+              <User size={20} /> Personal Information
+            </h2>
+
             <div className="form-grid form-grid-two-column">
               <div className="form-field">
                 <label className="form-label">First Name</label>
@@ -121,13 +151,18 @@ const AccountSettings = () => {
             <div className="form-grid">
               <div className="form-field">
                 <label className="form-label">Email Address</label>
-                <input type="email" name="email" value={formData.email} className="form-input" readOnly />
+                <div className="field-with-action">
+                  <div className="email-display">{formData.email}</div>
+                  <a href="#" className="change-link">Change</a>
+                </div>
               </div>
             </div>
 
             <div className="form-grid form-grid-two-column">
               <div className="form-field">
-                <label className="form-label">Date of Birth</label>
+                <label className="form-label">
+                  <Calendar size={16} /> Date of Birth
+                </label>
                 <input type="date" name="birthdate" value={formData.birthdate} onChange={handleInputChange} className="form-input" />
               </div>
               <div className="form-field">
@@ -144,18 +179,41 @@ const AccountSettings = () => {
           </div>
 
           <div className="form-section">
-            <h2 className="section-title"><Users size={20} /> Family & Role</h2>
+            <h2 className="section-title">
+              <Users size={20} /> Family & Role
+            </h2>
             <div className="form-grid">
               <div className="form-field">
                 <label className="form-label">Role in Family</label>
-                <select name="role" value={formData.role} onChange={handleInputChange} className="form-select">
-                  <option value="parent">Parent</option>
-                  <option value="child">Child</option>
-                  <option value="guardian">Guardian</option>
-                  <option value="admin">Family Admin</option>
-                  <option value="member">Family Member</option>
-                </select>
+                <div className="info-box-row">
+                  {roles.map(role => (
+                    <button
+                      key={role.value}
+                      type="button"
+                      className={`role-badge ${formData.role === role.value ? 'active' : ''}`}
+                      onClick={() => setFormData(prev => ({ ...prev, role: role.value }))}
+                    >
+                      {role.label.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
               </div>
+            </div>
+          </div>
+
+          <div className="form-section">
+            <h2 className="section-title">
+              <Info size={20} /> Additional Information
+            </h2>
+
+            <div className="info-box">
+              <span className="info-label">Your Initials</span>
+              <span className="info-value">{initials}</span>
+            </div>
+
+            <div className="info-box">
+              <span className="info-label">Current Role</span>
+              <span className="role-badge active">{formData.role.toUpperCase()}</span>
             </div>
           </div>
 

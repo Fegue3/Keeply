@@ -12,7 +12,12 @@ const LoginForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
   const navigate = useNavigate();
-
+  const getInitials = (name: string) => {
+  const parts = name.trim().split(' ');
+  return parts.length > 1
+    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    : name[0]?.toUpperCase() || '';
+};  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -76,7 +81,7 @@ const LoginForm: React.FC = () => {
             refreshToken,
             sub,
             name: attrMap.name || '',
-            initials: attrMap['custom:initials'] || '',
+            initials: getInitials(attrMap.name || ''),
             picture: attrMap['custom:picture'] || ''
           };
 

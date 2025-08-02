@@ -15,7 +15,8 @@ const SignupForm: React.FC = () => {
     password: '',
     birthdate: '',
     gender: '',
-    role: 'member'
+    role: 'member',
+    picture: ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -65,7 +66,8 @@ const SignupForm: React.FC = () => {
       new CognitoUserAttribute({ Name: 'birthdate', Value: formData.birthdate }),
       new CognitoUserAttribute({ Name: 'gender', Value: formData.gender }),
       new CognitoUserAttribute({ Name: 'custom:initials', Value: initials }),
-      new CognitoUserAttribute({ Name: 'custom:role', Value: formData.role })
+      new CognitoUserAttribute({ Name: 'custom:role', Value: formData.role }),
+      new CognitoUserAttribute({ Name: 'custom:picture', Value: 'none' }),
     ];
 
     UserPool.signUp(formData.email, formData.password, attributeList, [], (err) => {

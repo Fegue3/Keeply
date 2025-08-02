@@ -11,24 +11,22 @@ const Navbar: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // 🔄 Atualiza com dados locais se existirem
   const loadLocalUserData = () => {
-    const storedName = localStorage.getItem('keeply_user_name');
-    const storedInitials = localStorage.getItem('keeply_user_initials');
+    const name = localStorage.getItem('keeply_user_name');
+    const initials = localStorage.getItem('keeply_user_initials');
 
-    if (storedName) setUserName(storedName);
-    if (storedInitials) setUserInitials(storedInitials);
+    if (name) setUserName(name);
+    if (initials) setUserInitials(initials);
   };
 
   useEffect(() => {
     loadLocalUserData();
 
     const token = getAuthToken();
-
     if (token && isAuthenticated()) {
       setIsLoggedIn(true);
-      setUserName(token.name || 'User');
-      setUserInitials(token.initials || (token.name?.[0]?.toUpperCase() || 'U'));
+      if (!userName && token.name) setUserName(token.name);
+      if (!userInitials && token.initials) setUserInitials(token.initials);
     }
 
     const currentUser = UserPool.getCurrentUser();
@@ -45,36 +43,35 @@ const Navbar: React.FC = () => {
           });
 
           const name = attrMap.name || 'User';
-          const initials =
-            attrMap['custom:initials'] ||
-            (name ? name[0]?.toUpperCase() : 'U');
+          const initials = attrMap['custom:initials'] || getInitials(name);
 
+          setIsLoggedIn(true);
           setUserName(name);
           setUserInitials(initials);
-          setIsLoggedIn(true);
 
-          // Atualiza localStorage para persistência
           localStorage.setItem('keeply_user_name', name);
           localStorage.setItem('keeply_user_initials', initials);
         });
       });
     }
 
-    // 📣 Listener do evento de atualização vindo do AccountSettings
     const handleUserUpdated = (e: Event) => {
       const customEvent = e as CustomEvent;
       const { name, initials } = customEvent.detail || {};
-
       if (name) setUserName(name);
       if (initials) setUserInitials(initials);
     };
 
     window.addEventListener('keeply:userUpdated', handleUserUpdated);
-
-    return () => {
-      window.removeEventListener('keeply:userUpdated', handleUserUpdated);
-    };
+    return () => window.removeEventListener('keeply:userUpdated', handleUserUpdated);
   }, []);
+
+  const getInitials = (fullName: string): string => {
+    const parts = fullName.trim().split(' ');
+    return parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : fullName[0]?.toUpperCase() || 'U';
+  };
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);

@@ -139,11 +139,13 @@ const LoginForm: React.FC = () => {
           className="keeply-button"
           disabled={isLoading}
         >
-          {isLoading ? 'Signing in...' : 'Log in'}
+          {isLoading ? 'Logging in...' : 'Log in'}
         </button>
 
         <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-          <a href="#" className="keeply-link">Forgot your password?</a>
+          <Link to={`/login/forgot-password`} state={{ email: formData.email }} className="keeply-link">
+            Forgot your password?
+          </Link>
         </div>
       </form>
 

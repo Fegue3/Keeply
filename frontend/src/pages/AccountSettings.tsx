@@ -6,7 +6,7 @@ import { CognitoUserAttribute, CognitoUserSession } from 'amazon-cognito-identit
 
 const AccountSettings = () => {
   const [formData, setFormData] = useState({
-    firstName: '',
+    name: '',
     lastName: '',
     email: '',
     birthdate: '',
@@ -39,8 +39,11 @@ const AccountSettings = () => {
             userData[attr.getName()] = attr.getValue();
           });
 
+          const fullName = userData.name || '';
+          const userInitials = getInitials(fullName);
+
           setFormData({
-            firstName: userData.name || '',
+            name: fullName,
             lastName: userData.family_name || '',
             email: userData.email || '',
             birthdate: userData.birthdate || '',
@@ -48,8 +51,7 @@ const AccountSettings = () => {
             role: userData['custom:role'] || ''
           });
 
-          const initials = getInitials(userData.name || '');
-          setInitials(initials);
+          setInitials(userInitials);
           setLoading(false);
         });
       });
@@ -57,10 +59,11 @@ const AccountSettings = () => {
   }, []);
 
   const getInitials = (name: string) => {
-    const parts = name.trim().split(' ');
-    return parts.length > 1
-      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-      : name[0].toUpperCase();
+    const parts = name.trim().split(' ').filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name[0]?.toUpperCase() || '';
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -73,11 +76,12 @@ const AccountSettings = () => {
     if (!user) return;
 
     const attributeList = [
-      new CognitoUserAttribute({ Name: 'name', Value: formData.firstName }),
+      new CognitoUserAttribute({ Name: 'name', Value: formData.name }),
       new CognitoUserAttribute({ Name: 'family_name', Value: formData.lastName }),
       new CognitoUserAttribute({ Name: 'birthdate', Value: formData.birthdate }),
       new CognitoUserAttribute({ Name: 'gender', Value: formData.gender }),
-      new CognitoUserAttribute({ Name: 'custom:role', Value: formData.role })
+      new CognitoUserAttribute({ Name: 'custom:role', Value: formData.role }),
+      new CognitoUserAttribute({ Name: 'custom:initials', Value: getInitials(formData.name) })
     ];
 
     user.getSession((err: Error | null, session: CognitoUserSession | null) => {
@@ -89,20 +93,16 @@ const AccountSettings = () => {
         } else {
           setSuccess('Changes saved successfully!');
 
-          const updatedInitials = getInitials(formData.firstName);
+          const updatedInitials = getInitials(formData.name);
           setInitials(updatedInitials);
 
-          // 🔐 Gravar em localStorage
-          localStorage.setItem('keeply_user_name', formData.firstName);
+          localStorage.setItem('keeply_user_name', formData.name);
           localStorage.setItem('keeply_user_initials', updatedInitials);
-          // localStorage.setItem('keeply_user_photo', ''); // futuro
 
-          // 📣 Notificar a Navbar
           window.dispatchEvent(new CustomEvent('keeply:userUpdated', {
             detail: {
-              name: formData.firstName,
-              initials: updatedInitials,
-              // photoUrl: '' // se usares imagem
+              name: formData.name,
+              initials: updatedInitials
             }
           }));
 
@@ -112,7 +112,7 @@ const AccountSettings = () => {
     });
   };
 
-  if (loading) return <div className="keeply-container-account">Loading...</div>;
+  if (loading) return <div className="keeply-container">Loading...</div>;
 
   return (
     <div className="settings-container">
@@ -139,12 +139,24 @@ const AccountSettings = () => {
 
             <div className="form-grid form-grid-two-column">
               <div className="form-field">
-                <label className="form-label">First Name</label>
-                <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} className="form-input" />
+                <label className="form-label">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="form-input"
+                />
               </div>
               <div className="form-field">
-                <label className="form-label">Last Name</label>
-                <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} className="form-input" />
+                <label className="form-label">Family Name</label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  className="form-input"
+                />
               </div>
             </div>
 

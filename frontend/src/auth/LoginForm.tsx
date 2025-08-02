@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './LoginForm.css';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
+import UserPool from './UserPool';
 
 const LoginForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +13,8 @@ const LoginForm: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -39,20 +43,36 @@ const LoginForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError('');
 
     if (!validateForm()) return;
 
     setIsLoading(true);
 
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Login attempt:', formData);
-      // TODO: redirect or save auth token
-    } catch (error) {
-      console.error('Login error:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    const user = new CognitoUser({
+      Username: formData.email,
+      Pool: UserPool
+    });
+
+    const authDetails = new AuthenticationDetails({
+      Username: formData.email,
+      Password: formData.password
+    });
+
+    user.authenticateUser(authDetails, {
+      onSuccess: (session) => {
+        console.log('Login success:', session);
+        // Optional: store tokens
+        const idToken = session.getIdToken().getJwtToken();
+        localStorage.setItem('keeply_id_token', idToken);
+
+        setTimeout(() => navigate('/'), 1000);
+      },
+      onFailure: (err) => {
+        setIsLoading(false);
+        setAuthError(err.message || 'Login failed');
+      }
+    });
   };
 
   return (
@@ -107,6 +127,12 @@ const LoginForm: React.FC = () => {
           </div>
           {errors.password && <span className="keeply-error-message">{errors.password}</span>}
         </div>
+
+        {authError && (
+          <div className="keeply-error-message" style={{ marginBottom: '1rem' }}>
+            {authError}
+          </div>
+        )}
 
         <button 
           type="submit" 

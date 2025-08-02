@@ -20,6 +20,7 @@ import AddItem from "../pages/AddItem";
 import Settings from "../pages/Settings";
 import Family from "../pages/Family";
 import AuthLayout from "../auth/AuthLayout";
+import Account from "../pages/AccountSettings";
 
 export default function AppRouter() {
   const AppLayout = () => (
@@ -52,6 +53,7 @@ export default function AppRouter() {
         <Route path="/items/:id" element={<ItemDetails />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/family" element={<Family />} />
+        <Route path="/profile" element={<Account />} />
       </Route>
     </Routes>
   );

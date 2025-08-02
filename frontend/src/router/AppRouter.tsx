@@ -1,37 +1,44 @@
-import { Routes, Route, Outlet, Navigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 
-import Login from "../pages/Login";
-import Register from "../pages/Register";
+// Layout
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+
+// Auth Forms
+import LoginForm from "../auth/LoginForm";
+import SignupForm from "../auth/SignupForm";
+
+// App Pages
 import Dashboard from "../pages/Dashboard";
 import Items from "../pages/Items";
 import ItemDetails from "../pages/ItemDetails";
 import AddItem from "../pages/AddItem";
 import Settings from "../pages/Settings";
 import Family from "../pages/Family";
+import AuthLayout from "../auth/AuthLayout";
 
 export default function AppRouter() {
+  const AppLayout = () => (
+    <>
+      <Navbar />
+      <main style={{ padding: "2rem", minHeight: "calc(100vh - 160px)" }}>
+        <Outlet />
+      </main>
+      <Footer />
+    </>
+  );
+
   return (
     <Routes>
-      {/* Auth Routes (sem Navbar) */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      {/* Auth Pages — usam o AuthLayout */}
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<LoginForm />} />
+        <Route path="/register" element={<SignupForm />} />
+      </Route>
 
-      {/* Layout com Navbar + Outlet inline */}
-      <Route
-        element={
-          <>
-            <Navbar />
-            <main style={{ padding: "2rem" }}>
-              <Outlet />
-            </main>
-          </>
-        }
-      >
-        {/* Redirecionar raiz para dashboard */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
-        {/* Rotas protegidas (ou públicas com navbar) */}
+      {/* App Pages — com Navbar + Footer */}
+      <Route element={<AppLayout />}>
+        <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/items" element={<Items />} />
         <Route path="/items/new" element={<AddItem />} />

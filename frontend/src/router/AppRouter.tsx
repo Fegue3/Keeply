@@ -7,6 +7,7 @@ import Footer from "../components/Footer";
 // Auth Forms
 import LoginForm from "../auth/LoginForm";
 import SignupForm from "../auth/SignupForm";
+import ConfirmForm from '../auth/ConfirmForm';
 
 // App Pages
 import Dashboard from "../pages/Dashboard";
@@ -34,6 +35,7 @@ export default function AppRouter() {
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginForm />} />
         <Route path="/register" element={<SignupForm />} />
+        <Route path="/register/confirm" element={<ConfirmForm />} />
       </Route>
 
       {/* App Pages — com Navbar + Footer */}

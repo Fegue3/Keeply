@@ -43,10 +43,7 @@
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
 
-  /* Outros */
   --transition-all: all 0.2s ease-in-out;
-
-  --keeply-text-primary: var(--keeply-text);
 }
 
 * {
@@ -62,14 +59,12 @@ body {
   line-height: 1.5;
 }
 
-/* Container geral */
 .keeply-container {
   padding: var(--spacing-2xl);
   max-width: 1000px;
   margin: 0 auto;
 }
 
-/* Header */
 .keeply-header {
   background-color: var(--keeply-white);
   box-shadow: var(--shadow-sm);
@@ -206,7 +201,7 @@ body {
   transform: scale(1.05);
 }
 
-/* Form */
+/* Form layout */
 .form-section {
   margin-bottom: var(--spacing-2xl);
 }
@@ -234,6 +229,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
 }
 
 .form-label {
@@ -263,6 +259,113 @@ body {
 .form-input[readonly] {
   background-color: var(--keeply-bg);
   color: var(--keeply-text-secondary);
+}
+
+/* Email field styling */
+.field-with-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.email-display {
+  background-color: var(--keeply-background-alt);
+  border: 1px solid var(--keeply-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  font-size: var(--font-size-base);
+  color: var(--keeply-text-secondary);
+  flex: 1;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+}
+
+.change-link {
+  font-size: var(--font-size-sm);
+  color: var(--keeply-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease, transform 0.2s ease;
+  position: relative;
+}
+
+.change-link::after {
+  content: "";
+  display: block;
+  width: 0%;
+  height: 2px;
+  background: var(--keeply-primary);
+  transition: width 0.3s ease;
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+}
+
+.change-link:hover {
+  color: var(--keeply-primary-hover);
+  transform: translateY(-1px);
+}
+
+.change-link:hover::after {
+  width: 100%;
+}
+
+/* Role badges */
+.info-box {
+  background-color: var(--keeply-background-alt);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.info-label {
+  font-size: var(--font-size-sm);
+  color: var(--keeply-text-secondary);
+}
+
+.info-value {
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  color: var(--keeply-text);
+}
+
+.role-badge {
+  background-color: var(--keeply-primary);
+  color: var(--keeply-white);
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius-full);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+}
+
+.info-box-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.role-badge.active {
+  background-color: var(--keeply-primary);
+  color: var(--keeply-white);
+  font-weight: 600;
+}
+
+/* Textarea */
+.form-textarea {
+  background-color: var(--keeply-background-alt);
+  border: 1px solid var(--keeply-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  font-size: var(--font-size-base);
+  color: var(--keeply-text);
+  resize: vertical;
+  min-height: 120px;
 }
 
 /* Save section */

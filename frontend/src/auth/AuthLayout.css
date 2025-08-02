@@ -22,7 +22,7 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   background-color: var(--keeply-bg);
-  color: var(--keeply-text);
+  color: #3f2c1e;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -34,7 +34,7 @@ body {
   font-weight: 700;
   color: var(--keeply-text);
   text-decoration: none;
-  font-size: 2rem;
+  font-size: 1.5rem;
   letter-spacing: -0.02em;
 }
 .keeply-logo-link {

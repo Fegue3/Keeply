@@ -59,7 +59,7 @@ body {
   line-height: 1.5;
 }
 
-.keeply-container {
+.keeply-container-account {
   padding: var(--spacing-2xl);
   max-width: 1000px;
   margin: 0 auto;
@@ -78,7 +78,7 @@ body {
   padding: var(--spacing-md) var(--spacing-xl);
 }
 
-.keeply-logo {
+.keeply-logo-account {
   font-weight: bold;
   color: var(--keeply-primary);
   font-size: 1.25rem;
@@ -405,18 +405,90 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .keeply-nav-items {
-    flex-wrap: wrap;
-    gap: var(--spacing-md);
+  .keeply-container-account {
+    padding: var(--spacing-lg);
+    max-width: 100%;
+  }
+
+  .settings-main {
+    padding: var(--spacing-lg);
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .settings-header {
+    text-align: left;
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .settings-title {
+    font-size: var(--font-size-2xl);
+  }
+
+  .settings-subtitle {
+    font-size: var(--font-size-sm);
   }
 
   .profile-avatar {
-    width: 100px;
-    height: 100px;
+    width: 96px;
+    height: 96px;
     font-size: var(--font-size-xl);
   }
 
-  .keeply-container {
-    padding: var(--spacing-lg);
+  .profile-picture-section {
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+  }
+
+  .form-label {
+    font-size: var(--font-size-sm);
+  }
+
+  .form-input,
+  .form-select {
+    padding: var(--spacing-sm);
+    font-size: var(--font-size-base);
+  }
+
+  .form-field {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .keeply-btn {
+    width: 100%;
+    padding: 1rem;
+    font-size: var(--font-size-base);
+  }
+
+  .info-box {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .field-with-action {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .change-link {
+    align-self: flex-start;
+    margin-top: var(--spacing-sm);
+  }
+
+  .role-badge {
+    padding: 0.5rem 1rem;
+    font-size: var(--font-size-xs);
+  }
+
+  .keeply-success-message {
+    font-size: var(--font-size-sm);
+  }
+
+  .save-section {
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
   }
 }

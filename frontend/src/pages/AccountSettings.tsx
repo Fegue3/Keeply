@@ -112,11 +112,11 @@ const AccountSettings = () => {
     });
   };
 
-  if (loading) return <div className="keeply-container">Loading...</div>;
+  if (loading) return <div className="keeply-container-account">Loading...</div>;
 
   return (
     <div className="settings-container">
-      <div className="keeply-container">
+      <div className="keeply-container-account">
         <main className="settings-main">
           <div className="settings-header">
             <h1 className="settings-title">Account Settings</h1>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate} from 'react-router-dom';
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import './SignupForm.css';
 import './LoginForm.css';
@@ -7,6 +7,7 @@ import UserPool from './UserPool';
 import { CognitoUserAttribute } from 'amazon-cognito-identity-js';
 
 const SignupForm: React.FC = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     family_name: '',
@@ -75,6 +76,9 @@ const SignupForm: React.FC = () => {
       }
       setSuccessMessage('Account created! Check your email to confirm.');
     });
+    setTimeout(() => {
+    navigate('/register/confirm', { state: { email: formData.email } }); // passa o email
+  }, 1500); 
   };
 
   return (

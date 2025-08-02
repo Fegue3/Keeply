@@ -1,0 +1,222 @@
+/* LoginForm Styles */
+
+:root {
+  --keeply-bg: #fdfcf9;
+  --keeply-primary: #a47148;
+  --keeply-primary-hover: #8f5e3a;
+  --keeply-text: #3f2c1e;
+  --keeply-text-secondary: #7a6f66;
+  --keeply-white: #ffffff;
+  --keeply-shadow: rgba(63, 44, 30, 0.1);
+  --keeply-shadow-lg: rgba(63, 44, 30, 0.15);
+  --keeply-border: rgba(122, 111, 102, 0.2);
+  --keeply-error: #dc3545;
+  --keeply-success: #28a745;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background-color: var(--keeply-bg);
+  color: var(--keeply-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Keeply Typography */
+.keeply-logo {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-weight: 700;
+  color: var(--keeply-text);
+  text-decoration: none;
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+}
+
+.keeply-form-container {
+  width: 100%;
+  max-width: 400px;
+  background: var(--keeply-white);
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px var(--keeply-shadow);
+  border: 1px solid var(--keeply-border);
+}
+
+.keeply-form-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.keeply-form-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--keeply-text);
+}
+
+.keeply-form-subtitle {
+  color: var(--keeply-text-secondary);
+  font-size: 1rem;
+  margin-top: 0.25rem;
+}
+
+.keeply-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.keeply-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.keeply-label {
+  font-weight: 500;
+  color: var(--keeply-text);
+  font-size: 0.9rem;
+}
+
+.keeply-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.keeply-input {
+  width: 100%;
+  padding: 0.875rem 1rem 0.875rem 2.75rem;
+  border: 2px solid var(--keeply-border);
+  border-radius: 12px;
+  font-size: 1rem;
+  color: var(--keeply-text);
+  background: var(--keeply-white);
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.keeply-input:focus {
+  border-color: var(--keeply-primary);
+  box-shadow: 0 0 0 3px rgba(164, 113, 72, 0.1);
+}
+
+.keeply-input-icon {
+  position: absolute;
+  left: 1rem;
+  width: 20px;
+  height: 20px;
+  color: var(--keeply-text-secondary);
+  z-index: 1;
+}
+
+.keeply-button {
+  padding: 0.875rem 1.5rem;
+  background: var(--keeply-primary);
+  color: var(--keeply-white);
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.keeply-button:hover {
+  background: var(--keeply-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(164, 113, 72, 0.3);
+}
+
+.keeply-button:active {
+  transform: translateY(0);
+}
+
+.keeply-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.keeply-link {
+  color: var(--keeply-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.keeply-link:hover {
+  color: var(--keeply-primary-hover);
+  text-decoration: underline;
+}
+
+.keeply-form-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--keeply-border);
+}
+
+.keeply-form-switch {
+  color: var(--keeply-text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Password Toggle */
+.keeply-password-toggle {
+  position: absolute;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: var(--keeply-text-secondary);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+  outline: none;
+}
+
+.keeply-password-toggle:hover {
+  color: var(--keeply-primary);
+}
+
+.keeply-password-toggle:focus {
+  color: var(--keeply-primary);
+}
+
+.keeply-password-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Error States */
+.keeply-input.error {
+  border-color: var(--keeply-error);
+}
+
+.keeply-error-message {
+  color: var(--keeply-error);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+/* Success States */
+.keeply-success-message {
+  color: var(--keeply-success);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 0.75rem;
+  background: rgba(40, 167, 69, 0.1);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}

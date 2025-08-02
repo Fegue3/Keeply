@@ -84,7 +84,7 @@ const Navbar: React.FC = () => {
                   {userInitials}
                 </button>
                 <div className={`dropdown ${isDropdownOpen ? 'open' : ''}`}>
-                  <a href="/account" className="dropdown-item"><User size={16} /> Profile</a>
+                  <a href="/profile" className="dropdown-item"><User size={16} /> Profile</a>
                   <a href="/settings" className="dropdown-item"><Settings size={16} /> Settings</a>
                   <div className="dropdown-separator"></div>
                   <a href="#" onClick={(e) => { e.preventDefault(); logout(); }} className="dropdown-item">
@@ -138,7 +138,7 @@ const Navbar: React.FC = () => {
             </div>
             <div className="mobile-actions">
               <a href="/add" className="btn-primary" onClick={closeMobileMenu}><Plus size={16} /> Add Item</a>
-              <a href="/account" className="navbar-link" onClick={closeMobileMenu}><User size={18} /> Profile</a>
+              <a href="/profile" className="navbar-link" onClick={closeMobileMenu}><User size={18} /> Profile</a>
               <a href="#" className="navbar-link" onClick={(e) => { e.preventDefault(); logout(); closeMobileMenu(); }}>
                 <LogOut size={18} /> Logout
               </a>

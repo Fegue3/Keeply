@@ -8,6 +8,9 @@ import Footer from "../components/Footer";
 import LoginForm from "../auth/LoginForm";
 import SignupForm from "../auth/SignupForm";
 import ConfirmForm from '../auth/ConfirmForm';
+import ForgotPassword from "../auth/ForgotPassword";
+import ResetPassword from '../auth/ResetPassword';
+
 
 // App Pages
 import Dashboard from "../pages/Dashboard";
@@ -36,6 +39,8 @@ export default function AppRouter() {
         <Route path="/login" element={<LoginForm />} />
         <Route path="/register" element={<SignupForm />} />
         <Route path="/register/confirm" element={<ConfirmForm />} />
+        <Route path="/login/forgot-password" element={<ForgotPassword />} />
+        <Route path="/login/reset-password" element={<ResetPassword />} />
       </Route>
 
       {/* App Pages — com Navbar + Footer */}

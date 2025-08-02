@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Home, Package, Settings, Plus, Menu, X, User, LogOut } from 'lucide-react';
 import './Navbar.css';
 import UserPool from '../auth/UserPool';
-
+import { getAuthToken, isAuthenticated } from '../utils/auth';
 
 const Navbar: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -12,27 +12,35 @@ const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    const token = getAuthToken();
+
+    if (token && isAuthenticated()) {
+      setIsLoggedIn(true);
+      setUserName(token.name || 'User');
+      setUserInitials(token.initials || (token.name?.[0]?.toUpperCase() || 'U'));
+    }
+
     const currentUser = UserPool.getCurrentUser();
-
     if (currentUser) {
-      //Typescript my beloved
       currentUser.getSession((err, session) => {
-        if (err || !session?.isValid()) {
-          setIsLoggedIn(false);
-        } else {
-          currentUser.getUserAttributes((err, attributes) => {
-            if (err || !attributes) return;
+        if (err || !session?.isValid()) return;
 
-            const attrMap: Record<string, string> = {};
-            attributes.forEach(attr => {
-              attrMap[attr.getName()] = attr.getValue();
-            });
+        currentUser.getUserAttributes((err, attributes) => {
+          if (err || !attributes) return;
 
-            setUserName(attrMap.name || 'User');
-            setUserInitials(attrMap['custom:initials'] || attrMap.name?.[0]?.toUpperCase() || 'U');
-            setIsLoggedIn(true);
+          const attrMap: Record<string, string> = {};
+          attributes.forEach(attr => {
+            attrMap[attr.getName()] = attr.getValue();
           });
-        }
+
+          setUserName(attrMap.name || 'User');
+          setUserInitials(
+            attrMap['custom:initials'] ||
+            (attrMap.name ? attrMap.name[0]?.toUpperCase() : 'U')
+          );
+
+          setIsLoggedIn(true);
+        });
       });
     }
   }, []);
@@ -42,12 +50,14 @@ const Navbar: React.FC = () => {
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   const logout = () => {
+    localStorage.removeItem('keeply_token');
     const currentUser = UserPool.getCurrentUser();
     if (currentUser) currentUser.signOut();
 
     setIsLoggedIn(false);
     setUserName('');
     setUserInitials('');
+    window.location.href = '/login';
   };
 
   return (

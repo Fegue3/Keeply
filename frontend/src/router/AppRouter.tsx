@@ -1,7 +1,5 @@
-import { Routes, Route } from "react-router-dom";
-import AppLayout from "../layouts/AppLayout";
-import AuthLayout from "../layouts/AuthLayout";
-import PrivateRoute from "./PrivateRoute";
+import { Routes, Route, Outlet, Navigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
 
 import Login from "../pages/Login";
 import Register from "../pages/Register";
@@ -15,20 +13,25 @@ import Family from "../pages/Family";
 export default function AppRouter() {
   return (
     <Routes>
-      {/* Auth Routes */}
-      <Route element={<AuthLayout />}>
-        <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-      </Route>
+      {/* Auth Routes (sem Navbar) */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
 
-      {/* Protected Routes */}
+      {/* Layout com Navbar + Outlet inline */}
       <Route
         element={
-          <PrivateRoute>
-            <AppLayout />
-          </PrivateRoute>
+          <>
+            <Navbar />
+            <main style={{ padding: "2rem" }}>
+              <Outlet />
+            </main>
+          </>
         }
       >
+        {/* Redirecionar raiz para dashboard */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+        {/* Rotas protegidas (ou públicas com navbar) */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/items" element={<Items />} />
         <Route path="/items/new" element={<AddItem />} />

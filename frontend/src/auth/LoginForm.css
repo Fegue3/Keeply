@@ -1,5 +1,3 @@
-/* LoginForm Styles */
-
 :root {
   --keeply-bg: #fdfcf9;
   --keeply-primary: #a47148;
@@ -20,7 +18,8 @@
   box-sizing: border-box;
 }
 
-body {
+body, html {
+  height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   background-color: var(--keeply-bg);
   color: var(--keeply-text);
@@ -29,24 +28,23 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Keeply Typography */
-.keeply-logo {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  font-weight: 700;
-  color: var(--keeply-text);
-  text-decoration: none;
-  font-size: 2rem;
-  letter-spacing: -0.02em;
+.keeply-screen-wrapper {
+  display: flex;
+  height: 100vh;
+  width: 100%;
 }
 
 .keeply-form-container {
-  width: 100%;
-  max-width: 400px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4rem 6rem;
   background: var(--keeply-white);
-  padding: 2.5rem;
-  border-radius: 16px;
   box-shadow: 0 10px 30px var(--keeply-shadow);
-  border: 1px solid var(--keeply-border);
+  border-left: 1px solid var(--keeply-border);
+  height: 100%; /* <-- ADICIONADO */
+  max-width: 100%; /* <-- ADICIONADO */
 }
 
 .keeply-form-header {
@@ -70,6 +68,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
 .keeply-form-group {
@@ -186,10 +186,7 @@ body {
   outline: none;
 }
 
-.keeply-password-toggle:hover {
-  color: var(--keeply-primary);
-}
-
+.keeply-password-toggle:hover,
 .keeply-password-toggle:focus {
   color: var(--keeply-primary);
 }
@@ -199,7 +196,7 @@ body {
   cursor: not-allowed;
 }
 
-/* Error States */
+/* Error / Success */
 .keeply-input.error {
   border-color: var(--keeply-error);
 }
@@ -210,7 +207,6 @@ body {
   margin-top: 0.25rem;
 }
 
-/* Success States */
 .keeply-success-message {
   color: var(--keeply-success);
   font-size: 0.9rem;

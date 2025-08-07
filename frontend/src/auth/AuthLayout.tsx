@@ -6,17 +6,16 @@ import illustrationImage from '../assets/icon.jpg';
 const AuthLayout: React.FC = () => {
   return (
     <div className="keeply-container">
-      {/* Header */}
-      <header className="keeply-header">
-        <Link to="/" className="keeply-logo keeply-logo-link">
-  Keeply
-</Link>
-      </header>
 
       {/* Main Content */}
       <main className="keeply-main">
         {/* Desktop Illustration Section */}
         <div className="keeply-illustration-section">
+          <header className="keeply-header">
+        <Link to="/" className="keeply-logo keeply-logo-link">
+  Keeply
+</Link>
+      </header>
           <img 
             src={illustrationImage} 
             alt="Keeply - Organize your family's important belongings"
@@ -38,15 +37,6 @@ const AuthLayout: React.FC = () => {
           </div>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="keeply-footer">
-        <div className="keeply-footer-links">
-          <a href="#" className="keeply-footer-link">Privacy Policy</a>
-          <a href="#" className="keeply-footer-link">Terms of Service</a>
-          <a href="#" className="keeply-footer-link">Support</a>
-        </div>
-      </footer>
     </div>
   );
 };

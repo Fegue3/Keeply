@@ -6,8 +6,12 @@
   right: 0;
   z-index: 1000;
   width: 100%;
-  background-color: #fdfcf9;
-  border-bottom: 1px solid #e8e1d8;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(0.8px);
+  -webkit-backdrop-filter: blur(0.8px);
+  border: 1px solid rgba(255, 255, 255, 0.41);
   padding: 0 32px;
   height: 72px;
   display: flex;

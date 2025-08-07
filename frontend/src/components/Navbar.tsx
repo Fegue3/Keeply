@@ -98,9 +98,9 @@ const Navbar: React.FC = () => {
         </div>
 
         <div className="navbar-center">
-          <a href="/" className="navbar-link active"><Home size={18} /> Dashboard</a>
-          <a href="/items" className="navbar-link"><Package size={18} /> Items</a>
-          <a href="/settings" className="navbar-link"><Settings size={18} /> Settings</a>
+          <a href="/" className="navbar-link active"> Dashboard</a>
+          <a href="/items" className="navbar-link"> Items</a>
+          <a href="/settings" className="navbar-link"> Settings</a>
         </div>
 
         <div className="navbar-right">

@@ -46,7 +46,7 @@ export default function AppRouter() {
 
       {/* App Pages — com Navbar + Footer */}
       <Route element={<AppLayout />}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route index element={<Navigate to="/" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/items" element={<Items />} />
         <Route path="/items/new" element={<AddItem />} />

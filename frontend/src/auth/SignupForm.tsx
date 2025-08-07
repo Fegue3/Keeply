@@ -71,16 +71,19 @@ const SignupForm: React.FC = () => {
     ];
 
     UserPool.signUp(formData.email, formData.password, attributeList, [], (err) => {
-      setIsLoading(false);
-      if (err) {
-        setErrors({ email: err.message || 'Signup failed' });
-        return;
-      }
-      setSuccessMessage('Account created! Check your email to confirm.');
-    });
-    setTimeout(() => {
-    navigate('/register/confirm', { state: { email: formData.email } }); // passa o email
-  }, 1500); 
+  setIsLoading(false);
+  if (err) {
+    setErrors({ email: err.message || 'Signup failed' });
+    return;
+  }
+  setSuccessMessage('Account created! Check your email to confirm.');
+  
+  // Redireciona apenas se signup for bem-sucedido
+  setTimeout(() => {
+    navigate('/register/confirm', { state: { email: formData.email } });
+  }, 1500);
+});
+
   };
 
   return (

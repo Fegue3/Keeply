@@ -110,7 +110,7 @@ const Navbar: React.FC = () => {
         <div className="navbar-center">
           <a href="/" className="navbar-link active"> Dashboard</a>
           <a href="/items" className="navbar-link"> Items</a>
-          <a href="/settings" className="navbar-link"> Settings</a>
+          <a href="/family" className="navbar-link"> Family</a>
         </div>
 
         <div className="navbar-right">
@@ -125,7 +125,7 @@ const Navbar: React.FC = () => {
                 </button>
                 <div className={`dropdown ${isDropdownOpen ? 'open' : ''}`}>
                   <a href="/profile" className="dropdown-item"><User size={16} /> Profile</a>
-                  <a href="/settings" className="dropdown-item"><Settings size={16} /> Settings</a>
+                  <a href="/family" className="dropdown-item"><Settings size={16} /> Family</a>
                   <div className="dropdown-separator"></div>
                   <a
                     href="#"
@@ -171,7 +171,7 @@ const Navbar: React.FC = () => {
         <div className="mobile-nav-links">
           <a href="/" className="navbar-link active" onClick={closeMobileMenu}><Home size={18} /> Dashboard</a>
           <a href="/items" className="navbar-link" onClick={closeMobileMenu}><Package size={18} /> Items</a>
-          <a href="/settings" className="navbar-link" onClick={closeMobileMenu}><Settings size={18} /> Settings</a>
+          <a href="/family" className="navbar-link" onClick={closeMobileMenu}><Settings size={18} /> Family</a>
         </div>
 
         {isLoggedIn ? (

@@ -4,6 +4,12 @@ import './Navbar.css';
 import UserPool from '../auth/UserPool';
 import { getAuthToken, isAuthenticated } from '../utils/auth';
 
+import type {
+  CognitoUser,
+  CognitoUserSession,
+  CognitoUserAttribute
+} from 'amazon-cognito-identity-js';
+
 const Navbar: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
@@ -19,44 +25,54 @@ const Navbar: React.FC = () => {
     if (initials) setUserInitials(initials);
   };
 
+  const getInitials = (fullName: string): string => {
+    const parts = fullName.trim().split(' ');
+    return parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : fullName[0]?.toUpperCase() || 'U';
+  };
+
   useEffect(() => {
     loadLocalUserData();
 
-    const token = getAuthToken();
+    const token: any = getAuthToken();
     if (token && isAuthenticated()) {
       setIsLoggedIn(true);
-      if (!userName && token.name) setUserName(token.name);
-      if (!userInitials && token.initials) setUserInitials(token.initials);
+      if (!userName && token.name) setUserName(token.name as string);
+      if (!userInitials && token.initials) setUserInitials(token.initials as string);
     }
 
-    const currentUser = UserPool.getCurrentUser();
+    // Tipar currentUser
+    const currentUser = (UserPool as any).getCurrentUser() as CognitoUser | null;
     if (currentUser) {
-      currentUser.getSession((err, session) => {
+      currentUser.getSession((err: unknown, session: CognitoUserSession | null) => {
         if (err || !session?.isValid()) return;
 
-        currentUser.getUserAttributes((err, attributes) => {
-          if (err || !attributes) return;
+        currentUser.getUserAttributes(
+          (attrErr: unknown, attributes: CognitoUserAttribute[] | undefined) => {
+            if (attrErr || !attributes) return;
 
-          const attrMap: Record<string, string> = {};
-          attributes.forEach(attr => {
-            attrMap[attr.getName()] = attr.getValue();
-          });
+            const attrMap: Record<string, string> = {};
+            attributes.forEach((attr) => {
+              attrMap[attr.getName()] = attr.getValue();
+            });
 
-          const name = attrMap.name || 'User';
-          const initials = attrMap['custom:initials'] || getInitials(name);
+            const name = attrMap.name || 'User';
+            const initials = attrMap['custom:initials'] || getInitials(name);
 
-          setIsLoggedIn(true);
-          setUserName(name);
-          setUserInitials(initials);
+            setIsLoggedIn(true);
+            setUserName(name);
+            setUserInitials(initials);
 
-          localStorage.setItem('keeply_user_name', name);
-          localStorage.setItem('keeply_user_initials', initials);
-        });
+            localStorage.setItem('keeply_user_name', name);
+            localStorage.setItem('keeply_user_initials', initials);
+          }
+        );
       });
     }
 
     const handleUserUpdated = (e: Event) => {
-      const customEvent = e as CustomEvent;
+      const customEvent = e as CustomEvent<{ name?: string; initials?: string }>;
       const { name, initials } = customEvent.detail || {};
       if (name) setUserName(name);
       if (initials) setUserInitials(initials);
@@ -64,14 +80,8 @@ const Navbar: React.FC = () => {
 
     window.addEventListener('keeply:userUpdated', handleUserUpdated);
     return () => window.removeEventListener('keeply:userUpdated', handleUserUpdated);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const getInitials = (fullName: string): string => {
-    const parts = fullName.trim().split(' ');
-    return parts.length >= 2
-      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-      : fullName[0]?.toUpperCase() || 'U';
-  };
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -81,7 +91,7 @@ const Navbar: React.FC = () => {
     localStorage.removeItem('keeply_token');
     localStorage.removeItem('keeply_user_name');
     localStorage.removeItem('keeply_user_initials');
-    const currentUser = UserPool.getCurrentUser();
+    const currentUser = (UserPool as any).getCurrentUser() as CognitoUser | null;
     if (currentUser) currentUser.signOut();
 
     setIsLoggedIn(false);
@@ -117,7 +127,11 @@ const Navbar: React.FC = () => {
                   <a href="/profile" className="dropdown-item"><User size={16} /> Profile</a>
                   <a href="/settings" className="dropdown-item"><Settings size={16} /> Settings</a>
                   <div className="dropdown-separator"></div>
-                  <a href="#" onClick={(e) => { e.preventDefault(); logout(); }} className="dropdown-item">
+                  <a
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); logout(); }}
+                    className="dropdown-item"
+                  >
                     <LogOut size={16} /> Logout
                   </a>
                 </div>
@@ -169,7 +183,11 @@ const Navbar: React.FC = () => {
             <div className="mobile-actions">
               <a href="/add" className="btn-primary" onClick={closeMobileMenu}><Plus size={16} /> Add Item</a>
               <a href="/profile" className="navbar-link" onClick={closeMobileMenu}><User size={18} /> Profile</a>
-              <a href="#" className="navbar-link" onClick={(e) => { e.preventDefault(); logout(); closeMobileMenu(); }}>
+              <a
+                href="#"
+                className="navbar-link"
+                onClick={(e) => { e.preventDefault(); logout(); closeMobileMenu(); }}
+              >
                 <LogOut size={18} /> Logout
               </a>
             </div>

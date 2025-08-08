@@ -44,7 +44,7 @@ export const handler = async (event) => {
       members: [
         {
           userId,
-          role: "parent",
+          role: "admin",
           joinedAt: now
         }
       ]

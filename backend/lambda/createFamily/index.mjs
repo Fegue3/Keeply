@@ -2,6 +2,7 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { PutCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import crypto from "crypto";
+import { stat } from "fs";
 
 const ddb = new DynamoDBClient({});
 const FAMILIES_TABLE = process.env.FAMILIES_TABLE || "Families";
@@ -48,7 +49,8 @@ export const handler = async (event) => {
           role: "admin",
           joinedAt: now
         }
-      ]
+      ],
+      status: "active"
     };
 
     await ddb.send(new PutCommand({ TableName: FAMILIES_TABLE, Item: item }));

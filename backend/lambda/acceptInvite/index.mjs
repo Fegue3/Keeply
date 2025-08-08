@@ -1,8 +1,10 @@
 // lambda/acceptInvite.mjs
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, UpdateCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 
-const ddb = new DynamoDBClient({});
+const base = new DynamoDBClient({});
+const ddb = DynamoDBDocumentClient.from(base);
+
 const INVITES_TABLE = process.env.INVITES_TABLE || "Invites";
 const FAMILIES_TABLE = process.env.FAMILIES_TABLE || "Families";
 
@@ -17,60 +19,94 @@ export const handler = async (event) => {
     const { inviteId, code } = body;
     if (!inviteId) return res(400, { message: "inviteId é obrigatório" });
 
-    // Buscar convite
+    // 1) Buscar convite
     const inv = await ddb.send(new GetCommand({ TableName: INVITES_TABLE, Key: { inviteId } }));
     const invite = inv.Item;
     if (!invite) return res(404, { message: "Convite não encontrado" });
-
-    // Validar estado e expiração
     if (invite.status !== "pending") return res(400, { message: "Convite não está pendente" });
     if (new Date(invite.expiresAt).getTime() < Date.now()) {
       return res(400, { message: "Convite expirado" });
     }
 
-    // Validar tipo
+    // ⚠️ Novo: não permitir aceitar um convite criado por mim próprio
+    if (invite.createdBy && invite.createdBy === userId) {
+      return res(403, { message: "Não podes aceitar um convite que criaste. O convite permanece pendente." });
+    }
+
+    // 2) Validar tipo (email vs code)
     if (invite.type === "email") {
-      if (!userEmail || invite.email?.toLowerCase() !== userEmail.toLowerCase()) {
+      if (!userEmail || invite.email?.toLowerCase() !== String(userEmail).toLowerCase()) {
         return res(403, { message: "Este convite é para outro email" });
       }
     } else if (invite.type === "code") {
-      if (!code || code !== invite.code) {
-        return res(400, { message: "Código inválido" });
-      }
+      if (!code || code !== invite.code) return res(400, { message: "Código inválido" });
     }
 
-    // Buscar família
+    // 3) Regra: um utilizador só pode pertencer a UMA família
+    const famScan = await ddb.send(new ScanCommand({ TableName: FAMILIES_TABLE, ProjectionExpression: "familyId, members" }));
+    const existingFam = (famScan.Items || []).find(f =>
+      Array.isArray(f.members) && f.members.some(m => m.userId === userId)
+    );
+
+    if (existingFam && existingFam.familyId !== invite.familyId) {
+      // já pertence a outra família → mantém pendente
+      return res(409, {
+        message: "Já pertences a uma família. Sai da família atual para aceitar este convite. O convite permanece pendente.",
+        currentFamilyId: existingFam.familyId,
+        requestedFamilyId: invite.familyId
+      });
+    }
+
+    // 4) Buscar família do convite
     const fam = await ddb.send(new GetCommand({
       TableName: FAMILIES_TABLE,
       Key: { familyId: invite.familyId }
     }));
     if (!fam.Item) return res(404, { message: "Família não encontrada" });
 
-    // Adicionar membro se não existir
+    // 5) Se já é membro desta família → NÃO aceitar, manter pendente
     const members = Array.isArray(fam.Item.members) ? fam.Item.members : [];
-    if (!members.some(m => m.userId === userId)) {
-      members.push({ userId, role: invite.role || "member" });
-      await ddb.send(new UpdateCommand({
-        TableName: FAMILIES_TABLE,
-        Key: { familyId: invite.familyId },
-        UpdateExpression: "SET #members = :m",
-        ExpressionAttributeNames: { "#members": "members" },
-        ExpressionAttributeValues: { ":m": members }
-      }));
+    const alreadyMember = members.some(m => m.userId === userId);
+    if (alreadyMember) {
+      return res(409, {
+        message: "Já és membro desta família. O convite continua pendente.",
+        familyId: invite.familyId,
+        status: invite.status
+      });
     }
 
-    // Marcar convite como aceite
+    // 6) Adicionar membro (só agora é permitido)
+    const newMembers = [...members, { userId, role: invite.role || "member", joinedAt: new Date().toISOString() }];
+    await ddb.send(new UpdateCommand({
+      TableName: FAMILIES_TABLE,
+      Key: { familyId: invite.familyId },
+      UpdateExpression: "SET #members = :m",
+      ExpressionAttributeNames: { "#members": "members" },
+      ExpressionAttributeValues: { ":m": newMembers }
+    }));
+
+    // 7) Marcar convite como aceite (apenas se adicionou membro)
     await ddb.send(new UpdateCommand({
       TableName: INVITES_TABLE,
       Key: { inviteId },
-      UpdateExpression: "SET #s = :s",
+      UpdateExpression: "SET #s = :s, acceptedBy = :u, acceptedAt = :t",
+      ConditionExpression: "#s = :pending", // evita race e aceitar duas vezes
       ExpressionAttributeNames: { "#s": "status" },
-      ExpressionAttributeValues: { ":s": "accepted" }
+      ExpressionAttributeValues: {
+        ":s": "accepted",
+        ":u": userId,
+        ":t": new Date().toISOString(),
+        ":pending": "pending"
+      }
     }));
 
-    return res(200, { message: "Convite aceite", familyId: invite.familyId, role: invite.role || "member" });
+    return res(200, {
+      message: "Convite aceite com sucesso.",
+      familyId: invite.familyId,
+      role: invite.role || "member"
+    });
   } catch (e) {
-    console.error(e);
+    console.error("acceptInvite error:", e);
     return res(500, { message: "Erro a aceitar convite" });
   }
 };

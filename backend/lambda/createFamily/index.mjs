@@ -41,6 +41,7 @@ export const handler = async (event) => {
       description,
       createdAt: now,
       createdBy: userId,
+      plan: "free",
       members: [
         {
           userId,

@@ -297,3 +297,28 @@
 }
 
 .tag.is-static{ pointer-events:none; opacity:.85; }
+
+.btn--danger{
+  background: var(--keeply-error);
+  border-color: transparent;
+  color: #fff;
+}
+.btn--danger:hover{ filter: brightness(0.95); }
+.btn--danger.is-on{ box-shadow: 0 0 0 3px rgba(220,53,69,.18); }
+
+/* card com botão X posicionável */
+.member{ position: relative; }
+.member__remove{
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(220,53,69,.35);
+  background: #fff5f6;
+  color: var(--keeply-error);
+  font-size: 18px; line-height: 1;
+  display: grid; place-items: center;
+  cursor: pointer;
+}
+.member__remove:hover{ background: #ffe9eb; }
+.member__remove:disabled{ opacity:.6; cursor:not-allowed; }

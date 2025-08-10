@@ -31,6 +31,10 @@ export function FamilyView({ family }: { family: Family; onRefresh: () => void }
   const [inviteErr, setInviteErr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  const [removeMode, setRemoveMode] = useState(false);
+const [removingId, setRemovingId] = useState<string | null>(null);
+const [removeErr, setRemoveErr] = useState<string | null>(null);
+
   useEffect(() => {
     let cancel = false;
     async function loadMembers() {
@@ -51,6 +55,39 @@ export function FamilyView({ family }: { family: Family; onRefresh: () => void }
     loadMembers();
     return () => { cancel = true; };
   }, [family.familyId]);
+
+  function getMySub(): string | null {
+  try {
+    const raw = localStorage.getItem("keeply_token");
+    if (!raw) return null;
+    const { idToken } = JSON.parse(raw);
+    if (!idToken) return null;
+    const payload = JSON.parse(atob(idToken.split(".")[1]));
+    return payload?.sub || null;
+  } catch { return null; }
+}
+const mySub = getMySub();
+const iAmAdmin = members.some(m => m.userId === mySub && ["admin","parent","guardian"].includes(m.role));
+
+// chamada ao endpoint DELETE
+async function removeMember(userId: string) {
+  if (!iAmAdmin) return;
+  if (!window.confirm("Tens a certeza que queres remover este membro?")) return;
+
+  setRemovingId(userId);
+  setRemoveErr(null);
+  try {
+    await apiFetch(`/families/${family.familyId}/members/${userId}`, { method: "DELETE" });
+    setMembers(prev => prev.filter(m => m.userId !== userId));
+  } catch (e: any) {
+    const msg =
+      (e?.bodyText && (() => { try { return JSON.parse(e.bodyText).message; } catch { return null; } })()) ||
+      e?.message || "Não foi possível remover o membro.";
+    setRemoveErr(msg);
+  } finally {
+    setRemovingId(null);
+  }
+}
 
   async function createInvite() {
     setInviteBusy(true);
@@ -96,13 +133,26 @@ export function FamilyView({ family }: { family: Family; onRefresh: () => void }
         </div>
 
         <div>
-          <button className="btn btn--primary" onClick={createInvite} disabled={inviteBusy}>
-            {inviteBusy ? "A gerar…" : "Convidar membro"}
-          </button>
-          {/* opcional: botão atualizar família */}
-          {/* <button className="btn btn--ghost" style={{ marginLeft: 8 }} onClick={onRefresh}>Atualizar</button> */}
-          {inviteErr && <div className="alert alert--error" style={{ marginTop: 8 }}>{inviteErr}</div>}
-        </div>
+  <button className="btn btn--primary" onClick={createInvite} disabled={inviteBusy}>
+    {inviteBusy ? "A gerar…" : "Convidar membro"}
+  </button>
+
+  {iAmAdmin && (
+    <button
+      className={`btn btn--danger ${removeMode ? "is-on" : ""}`}
+      style={{ marginLeft: 8 }}
+      onClick={() => setRemoveMode(v => !v)}
+    >
+      {removeMode ? "Cancelar" : "Remover membro"}
+    </button>
+  )}
+
+  {(inviteErr || removeErr) && (
+    <div className="alert alert--error" style={{ marginTop: 8 }}>
+      {inviteErr || removeErr}
+    </div>
+  )}
+</div>
       </header>
 
       {inviteCode && (
@@ -122,26 +172,36 @@ export function FamilyView({ family }: { family: Family; onRefresh: () => void }
 
         {!membersLoading && !membersError && (
           <div className="members__grid">
-            {members.length ? (
-              members.map((m) => (
-                <div className="member card" key={m.userId}>
-                  <div className="avatar">
-                    {m.initials || initials(m.name || m.email || m.userId)}
-                  </div>
-                  <div className="member__body">
-                    <div className="member__name">{m.name || "Utilizador"}</div>
-                    <div className="member__meta">
-                      <span className="tag">{m.role}</span>
-                      {m.email && <span className="muted">{m.email}</span>}
-                      {m.joinedAt && <span className="muted">desde {new Date(m.joinedAt).toLocaleDateString()}</span>}
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="muted">Sem membros listados.</div>
-            )}
-          </div>
+  {members.length ? members.map((m) => (
+    <div className="member card" key={m.userId}>
+      {/* botão X para remover */}
+      {removeMode && iAmAdmin && m.userId !== mySub && (
+        <button
+          className="member__remove"
+          title="Remover membro"
+          onClick={() => removeMember(m.userId)}
+          disabled={removingId === m.userId}
+        >
+          {removingId === m.userId ? "…" : "×"}
+        </button>
+      )}
+
+      <div className="member__left">
+        <div className="avatar">{m.initials || initials(m.name || m.email || m.userId)}</div>
+        <div className="member__info">
+          <div className="member__name">{m.name || "Utilizador"}</div>
+          {m.email && <div className="member__email" title={m.email}>{m.email}</div>}
+        </div>
+      </div>
+      <div className="member__right">
+        <span className="badge">{m.role}</span>
+        {m.joinedAt && <span className="member__since">desde {new Date(m.joinedAt).toLocaleDateString()}</span>}
+      </div>
+    </div>
+  )) : (
+    <div className="muted">Sem membros listados.</div>
+  )}
+</div>
         )}
       </section>
 

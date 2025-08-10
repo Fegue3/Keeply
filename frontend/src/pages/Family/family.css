@@ -160,23 +160,83 @@
 
 .members__grid{
   display:grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
 }
 
 .member{
-  display:flex; gap:12px; align-items:center;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  padding: 14px 16px;
 }
+
+.member__left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width: 0; /* permite truncar email */
+}
+
+.member__info{ min-width: 0; }
+.member__name{ font-weight: 700; line-height: 1.2; }
+
+.member__email{
+  font-size: 13px;
+  color: var(--keeply-text-secondary);
+  max-width: 340px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member__right{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:6px;
+  flex-shrink: 0;
+}
+
+/* avatar igual, mas ligeiro boost para consistência */
 .avatar{
   width:44px; height:44px; border-radius:50%;
-  background: #f1e6db;
-  display:grid; place-items:center; font-weight:600;
+  background:#f1e6db; display:grid; place-items:center;
+  font-weight:700;
 }
-.member__name{ font-weight: 600; }
-.member__meta{ display:flex; gap:8px; align-items:center; }
 
-.info__grid{
-  display:grid; gap:8px; grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+/* badge de role mais “chip” e com variantes */
+.badge{
+  display:inline-block;
+  font-size:12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background:#f2e8df;
+  border:1px solid var(--keeply-border);
+  text-transform: none;
+}
+.badge.role-admin{
+  background: #efe0d3;
+  border-color: rgba(164,113,72,.35);
+  color: var(--keeply-text);
+}
+.badge.role-member{
+  background: #f6eee6;
+  border-color: var(--keeply-border);
+}
+
+/* “desde …” discreto e alinhado à direita */
+.member__since{
+  font-size: 12px;
+  color: var(--keeply-text-secondary);
+}
+
+/* mobile: empilha direita por baixo para caber bem */
+@media (max-width: 520px){
+  .member{ flex-direction: column; align-items: flex-start; }
+  .member__right{ align-items: flex-start; }
+  .member__email{ max-width: 100%; }
 }
 .kv{ display:flex; gap:8px; }
 .kv__k{ width:120px; color: var(--keeply-text-secondary); }

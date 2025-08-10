@@ -18,7 +18,7 @@ import Items from "../pages/Items";
 import ItemDetails from "../pages/ItemDetails";
 import AddItem from "../pages/AddItem";
 import Settings from "../pages/Settings";
-import Family from "../pages/Family";
+import Family from "../pages/Family/Family";
 import AuthLayout from "../auth/AuthLayout";
 import Account from "../pages/AccountSettings";
 

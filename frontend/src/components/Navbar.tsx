@@ -125,7 +125,7 @@ const Navbar: React.FC = () => {
                 </button>
                 <div className={`dropdown ${isDropdownOpen ? 'open' : ''}`}>
                   <a href="/profile" className="dropdown-item"><User size={16} /> Profile</a>
-                  <a href="/family" className="dropdown-item"><Settings size={16} /> Family</a>
+                  <a href="/settings" className="dropdown-item"><Settings size={16} /> Settings</a>
                   <div className="dropdown-separator"></div>
                   <a
                     href="#"

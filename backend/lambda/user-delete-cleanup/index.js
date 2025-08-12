@@ -1,6 +1,3 @@
-// Node.js 18+ runtime
-// npm deps: (nenhuma; usa AWS SDK v3 já disponível no runtime)
-
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
@@ -10,36 +7,34 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
-const FAMILIES_TABLE = process.env.FAMILIES_TABLE;
+const FAMILIES_TABLE = process.env.FAMILIES_TABLE || "Families";
 
-// EventBridge -> AWS API Call via CloudTrail para cognito-idp AdminDeleteUser/DeleteUser
 export const handler = async (event) => {
   try {
-    const userId = event?.detail?.requestParameters?.username;
     if (!FAMILIES_TABLE) throw new Error("Missing env FAMILIES_TABLE");
-    if (!userId) {
+
+    const username = event?.detail?.requestParameters?.username; // pode ser sub OU email/alias
+    const eventName = event?.detail?.eventName;
+    console.log("Received event:", eventName, "username:", username);
+
+    if (!username) {
       console.log("No username in event; nothing to do.");
       return;
     }
 
-    console.log("Cleanup for deleted user:", userId);
-
-    // 1) Encontrar TODAS as famílias que contêm este user em members
-    const familyIds = await findFamiliesWithUser(userId);
-
-    // 2) Remover o user do array members em cada família
+    const familyIds = await findFamiliesPossiblyReferencing(username);
     for (const familyId of familyIds) {
-      await removeUserFromFamily(familyId, userId);
+      await removeByUserIdOrEmail(familyId, username);
     }
 
-    console.log(`Done. Families affected: ${familyIds.length}`);
+    console.log(`Cleanup done. Families affected: ${familyIds.length}`);
   } catch (err) {
     console.error("Cleanup error:", err);
     throw err;
   }
 };
 
-async function findFamiliesWithUser(userId) {
+async function findFamiliesPossiblyReferencing(username) {
   const affected = [];
   let lastKey;
 
@@ -48,7 +43,6 @@ async function findFamiliesWithUser(userId) {
       new ScanCommand({
         TableName: FAMILIES_TABLE,
         ExclusiveStartKey: lastKey,
-        // só precisamos destes atributos
         ProjectionExpression: "familyId, #m",
         ExpressionAttributeNames: { "#m": "members" },
       })
@@ -56,9 +50,11 @@ async function findFamiliesWithUser(userId) {
 
     for (const item of page.Items ?? []) {
       const members = Array.isArray(item.members) ? item.members : [];
-      if (members.some((m) => m && m.userId === userId)) {
-        affected.push(item.familyId);
-      }
+      // remove se coincidir por sub (userId) OU por email
+      const hit = members.some(
+        (m) => m && (m.userId === username || m.email === username)
+      );
+      if (hit) affected.push(item.familyId);
     }
     lastKey = page.LastEvaluatedKey;
   } while (lastKey);
@@ -66,8 +62,7 @@ async function findFamiliesWithUser(userId) {
   return affected;
 }
 
-async function removeUserFromFamily(familyId, userId) {
-  // lê o doc para termos a lista atual
+async function removeByUserIdOrEmail(familyId, username) {
   const current = await ddb.send(
     new GetCommand({
       TableName: FAMILIES_TABLE,
@@ -81,9 +76,10 @@ async function removeUserFromFamily(familyId, userId) {
     ? current.Item.members
     : [];
 
-  const next = members.filter((m) => m && m.userId !== userId);
+  const next = members.filter(
+    (m) => !(m && (m.userId === username || m.email === username))
+  );
 
-  // se não mudou, não vamos escrever
   if (next.length === members.length) {
     console.log(`Family ${familyId}: nothing to change.`);
     return;
@@ -100,5 +96,5 @@ async function removeUserFromFamily(familyId, userId) {
     })
   );
 
-  console.log(`Family ${familyId}: user ${userId} removed from members.`);
+  console.log(`Family ${familyId}: removed user/email ${username} from members.`);
 }

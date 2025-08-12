@@ -399,6 +399,22 @@ body {
   font-weight: 500;
 }
 
+.settings-container .change-link,
+.settings-container a.change-link,
+.settings-container button.change-link {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--keeply-primary) !important;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0 4px;
+  font-weight: 600;
+}
+.settings-container .change-link:hover {
+  color: var(--keeply-primary-hover) !important;
+}
+
 /* Responsivo */
 @media (max-width: 768px) {
   .form-grid-two-column {

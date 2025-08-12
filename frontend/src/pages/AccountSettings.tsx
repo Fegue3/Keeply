@@ -3,6 +3,7 @@ import { User, Users, Camera, Calendar, Info } from 'lucide-react';
 import './AccountSettings.css';
 import UserPool from '../auth/UserPool';
 import { CognitoUserAttribute, CognitoUserSession } from 'amazon-cognito-identity-js';
+import EmailChangeWidget from '../components/EmailChangeWidget';
 
 const AccountSettings = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ const AccountSettings = () => {
   const [initials, setInitials] = useState('');
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState('');
+  const [showEmailWidget, setShowEmailWidget] = useState(false);
 
   const roles = [
     { label: 'Parent', value: 'parent' },
@@ -32,8 +34,8 @@ const AccountSettings = () => {
       user.getSession((err: Error | null, session: CognitoUserSession | null) => {
         if (err || !session?.isValid()) return;
 
-        user.getUserAttributes((err: any | null, attributes: CognitoUserAttribute[] | undefined) => {
-          if (err || !attributes) return;
+        user.getUserAttributes((getErr: any, attributes) => {
+          if (getErr || !attributes) return;
           const userData: Record<string, string> = {};
           attributes.forEach(attr => {
             userData[attr.getName()] = attr.getValue();
@@ -84,15 +86,17 @@ const AccountSettings = () => {
       new CognitoUserAttribute({ Name: 'custom:initials', Value: getInitials(formData.name) })
     ];
 
-    user.getSession((err: Error | null, session: CognitoUserSession | null) => {
+    const userObj = UserPool.getCurrentUser();
+    if (!userObj) return;
+
+    userObj.getSession((err: Error | null, session: CognitoUserSession | null) => {
       if (err || !session?.isValid()) return;
 
-      user.updateAttributes(attributeList, (err: any | null) => {
-        if (err) {
-          console.error('Update failed', err);
+      userObj.updateAttributes(attributeList, (updErr: any) => {
+        if (updErr) {
+          console.error('Update failed', updErr);
         } else {
           setSuccess('Changes saved successfully!');
-
           const updatedInitials = getInitials(formData.name);
           setInitials(updatedInitials);
 
@@ -100,10 +104,7 @@ const AccountSettings = () => {
           localStorage.setItem('keeply_user_initials', updatedInitials);
 
           window.dispatchEvent(new CustomEvent('keeply:userUpdated', {
-            detail: {
-              name: formData.name,
-              initials: updatedInitials
-            }
+            detail: { name: formData.name, initials: updatedInitials }
           }));
 
           setTimeout(() => setSuccess(''), 3000);
@@ -165,7 +166,15 @@ const AccountSettings = () => {
                 <label className="form-label">Email Address</label>
                 <div className="field-with-action">
                   <div className="email-display">{formData.email}</div>
-                  <a href="#" className="change-link">Change</a>
+                  <button
+                    type="button"
+                    className="change-link"
+                    onClick={() => setShowEmailWidget(true)}
+                    aria-haspopup="dialog"
+                    aria-expanded={showEmailWidget}
+                  >
+                    Change
+                  </button>
                 </div>
               </div>
             </div>
@@ -175,11 +184,22 @@ const AccountSettings = () => {
                 <label className="form-label">
                   <Calendar size={16} /> Date of Birth
                 </label>
-                <input type="date" name="birthdate" value={formData.birthdate} onChange={handleInputChange} className="form-input" />
+                <input
+                  type="date"
+                  name="birthdate"
+                  value={formData.birthdate}
+                  onChange={handleInputChange}
+                  className="form-input"
+                />
               </div>
               <div className="form-field">
                 <label className="form-label">Gender</label>
-                <select name="gender" value={formData.gender} onChange={handleInputChange} className="form-select">
+                <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleInputChange}
+                  className="form-select"
+                >
                   <option value="">Select gender</option>
                   <option value="female">Female</option>
                   <option value="male">Male</option>
@@ -235,6 +255,17 @@ const AccountSettings = () => {
           </div>
         </main>
       </div>
+
+      {showEmailWidget && (
+        <EmailChangeWidget
+          currentEmail={formData.email}
+          onClose={() => setShowEmailWidget(false)}
+          onSuccess={(newEmail: string) => {
+            setFormData(prev => ({ ...prev, email: newEmail }));
+            setShowEmailWidget(false);
+          }}
+        />
+      )}
     </div>
   );
 };

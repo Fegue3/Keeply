@@ -43,3 +43,30 @@ export async function apiFetch<T = any>(path: string, init: RequestInit = {}) {
   if (res.status === 204) return undefined as T;
   return (await res.json()) as T;
 }
+
+
+export function getIdToken(): string | null {
+  try {
+    const raw = localStorage.getItem("keeply_token");
+    if (!raw) return null;
+    const { idToken } = JSON.parse(raw);
+    return idToken || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function apiFetchId<T = any>(path: string, init: RequestInit = {}) {
+  const idToken = getIdToken();
+  const headers = new Headers(init.headers || {});
+  headers.set("Content-Type", "application/json");
+  if (idToken) headers.set("Authorization", `Bearer ${idToken}`);
+
+  const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new HttpError(res.status, res.statusText || "Request failed", text || undefined);
+  }
+  if (res.status === 204) return undefined as T;
+  return (await res.json()) as T;
+}

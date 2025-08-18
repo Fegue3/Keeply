@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../../api/client";
+import FamilyAvatar from "../../components/FamilyAvatar";
 import "./family.css";
 
 type Member = {
@@ -255,7 +256,11 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
                 )}
 
                 <div className="member__left">
-                  <div className="avatar">{m.initials || initials(m.name || m.email || m.userId)}</div>
+                  <div className="avatar">{<FamilyAvatar
+  userId={m.userId}
+  size={36}
+  initials={m.initials || initials(m.name || m.email || m.userId)}
+/>}</div>
                   <div className="member__info">
                     <div className="member__name">{m.name || "Utilizador"}</div>
                     {m.email && <div className="member__email" title={m.email}>{m.email}</div>}

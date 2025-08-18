@@ -23,3 +23,9 @@ export async function commitAvatarKey(key: string) {
     body: JSON.stringify({ key }),
   });
 }
+
+export async function getAvatarViewUrlFor(userId: string) {
+  return apiFetchId<{ viewUrl: string | null }>(`/users/${encodeURIComponent(userId)}/avatar/view-url`, {
+    method: "GET",
+  });
+}

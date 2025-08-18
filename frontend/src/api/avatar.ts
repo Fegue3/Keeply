@@ -24,8 +24,15 @@ export async function commitAvatarKey(key: string) {
   });
 }
 
+
 export async function getAvatarViewUrlFor(userId: string) {
-  return apiFetchId<{ viewUrl: string | null }>(`/users/${encodeURIComponent(userId)}/avatar/view-url`, {
-    method: "GET",
-  });
+  // antiga (sem família) – mantém se quiseres
+  return apiFetchId<{ viewUrl: string | null }>(`/users/${encodeURIComponent(userId)}/avatar/view-url`, { method: "GET" });
+}
+
+export async function getFamilyMemberAvatarViewUrl(familyId: string, userId: string) {
+  return apiFetchId<{ viewUrl: string | null }>(
+    `/families/${encodeURIComponent(familyId)}/members/${encodeURIComponent(userId)}/avatar/view-url`,
+    { method: "GET" }
+  );
 }

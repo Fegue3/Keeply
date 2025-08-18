@@ -14,7 +14,7 @@ const footerLinks: Record<string, FooterLink[]> = {
     { name: "Documentação", href: "/docs" },
   ],
   Recursos: [
-    { name: "GitHub", href: "https://github.com/Fegue3/NebulaBox", external: true },
+    { name: "GitHub", href: "https://github.com/Fegue3/Keeply", external: true },
     { name: "API", href: "/api" },
     { name: "Tutoriais", href: "/tutorials" },
     { name: "Estado", href: "/status" },

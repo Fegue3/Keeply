@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { User, Users, Camera, Calendar, Info } from 'lucide-react';
+import { User, Users, Calendar, Info } from 'lucide-react';
 import './AccountSettings.css';
 import UserPool from '../auth/UserPool';
 import { CognitoUserAttribute, CognitoUserSession } from 'amazon-cognito-identity-js';
 import EmailChangeWidget from '../components/EmailChangeWidget';
+import UserAvatar from "../components/UserAvatar";
+import AvatarEditor from "../components/AvatarEditor";
 
 const AccountSettings = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +21,7 @@ const AccountSettings = () => {
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState('');
   const [showEmailWidget, setShowEmailWidget] = useState(false);
+  const [avatarBust, setAvatarBust] = useState<number>(0);
 
   const roles = [
     { label: 'Parent', value: 'parent' },
@@ -125,13 +128,11 @@ const AccountSettings = () => {
           </div>
 
           <div className="profile-picture-section">
-            <div className="profile-picture">
-              <div className="profile-avatar">{initials}</div>
-              <button className="profile-edit-btn" title="Change profile picture">
-                <Camera size={16} />
-              </button>
-            </div>
-          </div>
+  <div className="profile-picture" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+    <UserAvatar size={120} initials={initials} cacheBust={avatarBust} />
+    <AvatarEditor onChanged={() => setAvatarBust(Date.now())} />
+  </div>
+</div>
 
           <div className="form-section">
             <h2 className="section-title">

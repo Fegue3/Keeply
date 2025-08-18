@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Home, Package, Settings, Plus, Menu, X, User, LogOut } from 'lucide-react';
 import './Navbar.css';
 import UserPool from '../auth/UserPool';
+import UserAvatar from '../components/UserAvatar';
 import { getAuthToken, isAuthenticated } from '../utils/auth';
 
 import type {
@@ -120,22 +121,18 @@ const Navbar: React.FC = () => {
                 <Plus size={16} /> Add Item
               </a>
               <div className="user-menu">
-                <button className="user-avatar" onClick={toggleDropdown}>
-                  {userInitials}
-                </button>
-                <div className={`dropdown ${isDropdownOpen ? 'open' : ''}`}>
-                  <a href="/profile" className="dropdown-item"><User size={16} /> Profile</a>
-                  <a href="/settings" className="dropdown-item"><Settings size={16} /> Settings</a>
-                  <div className="dropdown-separator"></div>
-                  <a
-                    href="#"
-                    onClick={(e) => { e.preventDefault(); logout(); }}
-                    className="dropdown-item"
-                  >
-                    <LogOut size={16} /> Logout
-                  </a>
-                </div>
-              </div>
+  <button className="user-avatar" onClick={toggleDropdown} style={{ padding: 0, border: "none", background: "transparent" }}>
+    <UserAvatar size={40} initials={userInitials} />
+  </button>
+  <div className={`dropdown ${isDropdownOpen ? 'open' : ''}`}>
+    <a href="/profile" className="dropdown-item"><User size={16} /> Profile</a>
+    <a href="/settings" className="dropdown-item"><Settings size={16} /> Settings</a>
+    <div className="dropdown-separator"></div>
+    <a href="#" onClick={(e) => { e.preventDefault(); logout(); }} className="dropdown-item">
+      <LogOut size={16} /> Logout
+    </a>
+  </div>
+</div>
             </>
           ) : (
             <>
@@ -177,7 +174,7 @@ const Navbar: React.FC = () => {
         {isLoggedIn ? (
           <div className="mobile-user-info">
             <div className="mobile-user-profile">
-              <div className="user-avatar">{userInitials}</div>
+              <div className="user-avatar">{<UserAvatar size={40} initials={userInitials} />}</div>
               <span>{userName}</span>
             </div>
             <div className="mobile-actions">

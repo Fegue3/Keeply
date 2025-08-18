@@ -152,7 +152,7 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
     setDangerBusy(true);
     setDangerErr(null);
     try {
-      await apiFetch(`/families/${family.familyId}/members/${mySub}`, { method: "DELETE" });
+      await apiFetch(`/families/${family.familyId}/leave`, { method: "DELETE" });
       onRefresh();
     } catch (e: any) {
       const msg =

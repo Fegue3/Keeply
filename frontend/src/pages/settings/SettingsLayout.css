@@ -1,0 +1,251 @@
+:root{
+  --keeply-bg:#fdfcf9; --keeply-primary:#a47148; --keeply-primary-hover:#8f5e3a;
+  --keeply-text:#3f2c1e; --keeply-text-secondary:#7a6f66; --keeply-white:#fff;
+  --keeply-border: rgba(122,111,102,.2);
+  --card:#fff; --card-alt:#f4ebe3;
+  --radius:12px; --shadow:0 10px 15px rgba(63,44,30,.12);
+
+  /* novo: respiro e larguras fluidas */
+  --page-pad-x: clamp(12px, 3vw, 32px);
+  --grid-gap: clamp(16px, 2vw, 28px);
+}
+
+.keeply-settings-shell{
+  padding: 24px var(--page-pad-x) 56px;
+  min-height: calc(100vh - 160px); /* compensação navbar + footer */
+  background: var(--keeply-bg);
+}
+
+/* ocupa TUDO – largura fluida, sem max-width apertado */
+.keeply-settings-grid{
+  width: 100%;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: clamp(260px, 24vw, 360px) 1fr; /* sidebar ocupa “tudo” o necessário */
+  gap: var(--grid-gap);
+  align-items: start;
+}
+
+.keeply-settings-sidebar{
+  background: var(--card);
+  border: 1px solid var(--keeply-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  height: fit-content;
+  position: sticky;
+  top: 96px; /* abaixo da navbar fixa */
+}
+
+.keeply-settings-title{
+  font-weight: 800;
+  color: var(--keeply-text);
+  margin-bottom: 12px;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+}
+
+.keeply-settings-mobile{ display: none; }
+
+.keeply-settings-nav{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.keeply-settings-link{
+  display: block;
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: var(--keeply-text);
+  text-decoration: none;
+  border: 1px solid transparent;
+  background: #fff;
+  transition: all .2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.keeply-settings-link::before{
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(164,113,72,.08), transparent);
+  transform: translateX(-100%);
+  transition: transform .5s ease;
+}
+
+.keeply-settings-link:hover::before{ transform: translateX(100%); }
+
+.keeply-settings-link:hover{
+  background: #f5f1ec;
+  color: var(--keeply-primary);
+}
+
+.keeply-settings-link.active{
+  background: linear-gradient(135deg, var(--keeply-primary), var(--keeply-primary-hover));
+  color: #fff;
+  border-color: var(--keeply-primary);
+  box-shadow: 0 6px 18px rgba(164,113,72,.25);
+}
+
+.keeply-settings-content{
+  background: var(--card);
+  border: 1px solid var(--keeply-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: clamp(18px, 2vw, 28px);
+  min-height: 62vh;
+}
+
+/* Tablets grandes/monitores médios – sidebar um pouco mais larga */
+@media (max-width: 1280px){
+  .keeply-settings-grid{
+    grid-template-columns: clamp(240px, 28vw, 340px) 1fr;
+  }
+}
+
+/* Tablets */
+@media (max-width: 1024px){
+  .keeply-settings-grid{
+    grid-template-columns: clamp(220px, 32vw, 320px) 1fr;
+  }
+}
+
+/* Mobile */
+@media (max-width: 860px){
+  .keeply-settings-grid{
+    grid-template-columns: 1fr;
+  }
+
+  .keeply-settings-sidebar{
+    position: static;
+    padding: 12px;
+  }
+
+  .keeply-settings-nav{ display: none; }
+  .keeply-settings-mobile{ display: block; margin-bottom: 10px; }
+
+  /* dropdown “bonito/aesthetic” – nativo mas com vidro/chevron/anim */
+  .keeply-settings-select{
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 12px 44px 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--keeply-border);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.5)) padding-box,
+      radial-gradient(100% 100% at 0% 0%, rgba(164,113,72,.15), rgba(164,113,72,0)) border-box;
+    color: var(--keeply-text);
+    font-weight: 600;
+    letter-spacing: .2px;
+    box-shadow: 0 10px 20px rgba(63,44,30,.08);
+    transition: border-color .2s ease, box-shadow .2s ease, transform .06s ease;
+    backdrop-filter: blur(4px);
+    background-color: var(--card-alt);
+    position: relative;
+  }
+
+  /* chevron à direita, no mesmo espírito da navbar */
+  .keeply-settings-select{
+    background-image:
+      url("data:image/svg+xml;charset=UTF-8,%3csvg width='20' height='20' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M6 9l6 6 6-6' stroke='%233f2c1e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 20px 20px;
+  }
+
+  .keeply-settings-select:hover{
+    border-color: rgba(164,113,72,.55);
+    box-shadow: 0 12px 26px rgba(164,113,72,.18);
+  }
+
+  .keeply-settings-select:focus{
+    outline: none;
+    border-color: var(--keeply-primary);
+    box-shadow: 0 0 0 3px rgba(164,113,72,.25);
+    transform: translateY(-1px);
+  }
+
+  .keeply-settings-content{ padding: 16px; }
+}
+
+/* A11y: utilitário para rótulos escondidos */
+.sr-only{
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+
+.keeply-dropdown{ position:relative; }
+
+.keeply-dd-btn{
+  width:100%;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px;
+  padding:12px 14px;
+  border-radius:12px;
+  border:1px solid var(--keeply-border);
+  color:var(--keeply-text);
+  font-weight:700; letter-spacing:.2px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.55)) padding-box,
+    radial-gradient(120% 100% at 0% 0%, rgba(164,113,72,.18), rgba(164,113,72,0)) border-box;
+  box-shadow:0 10px 20px rgba(63,44,30,.08);
+  transition:border-color .2s, box-shadow .2s, transform .08s;
+  backdrop-filter: blur(4px);
+}
+.keeply-dd-btn:hover{ border-color:rgba(164,113,72,.55); box-shadow:0 12px 26px rgba(164,113,72,.18); }
+.keeply-dd-btn:focus{ outline:none; box-shadow:0 0 0 3px rgba(164,113,72,.25); transform: translateY(-1px); }
+.keeply-dd-btn.open .chevron{ transform: rotate(180deg); }
+.keeply-dd-btn .chevron{ transition: transform .2s ease; color: var(--keeply-text); }
+
+/* lista */
+.keeply-dd-list{
+  position:absolute; left:0; right:0; top:calc(100% + 8px);
+  background: var(--card);
+  border:1px solid var(--keeply-border);
+  border-radius:12px;
+  box-shadow:0 16px 34px rgba(63,44,30,.18);
+  overflow:hidden;
+  transform-origin: top center;
+  transform: translateY(-8px) scale(.98);
+  opacity:0; pointer-events:none;
+  transition: transform .18s ease, opacity .18s ease;
+  z-index: 30;
+}
+.keeply-dd-list.show{
+  transform: translateY(0) scale(1);
+  opacity:1; pointer-events:auto;
+}
+
+/* item */
+.keeply-dd-item{
+  width:100%;
+  text-align:left;
+  padding:12px 14px;
+  background:#fff; color: var(--keeply-text);
+  border:none; cursor:pointer;
+  transition: background .15s ease, color .15s ease, padding-left .15s ease;
+  font-weight:600;
+}
+.keeply-dd-item:hover{
+  background:#f5f1ec; color: var(--keeply-primary);
+  padding-left:18px;
+}
+.keeply-dd-item.active{
+  background: linear-gradient(135deg, var(--keeply-primary), var(--keeply-primary-hover));
+  color:#fff;
+}
+
+/* só mostra no mobile (mantém tua regra) */
+@media (min-width: 861px){
+  .keeply-settings-mobile{ display:none !important; }
+}
+@media (max-width: 860px){
+  .keeply-settings-mobile{ display:block; }
+}

@@ -17,9 +17,12 @@ import Dashboard from "../pages/Dashboard";
 import Items from "../pages/Items";
 import ItemDetails from "../pages/ItemDetails";
 import AddItem from "../pages/AddItem";
-import Settings from "../pages/Settings";
 import Family from "../pages/Family/Family";
 import AuthLayout from "../auth/AuthLayout";
+
+
+// Settings
+import SettingsLayout from "../pages/settings/SettingsLayout";
 import Account from "../pages/AccountSettings";
 
 export default function AppRouter() {
@@ -51,10 +54,22 @@ export default function AppRouter() {
         <Route path="/items" element={<Items />} />
         <Route path="/items/new" element={<AddItem />} />
         <Route path="/items/:id" element={<ItemDetails />} />
-        <Route path="/settings" element={<Settings />} />
         <Route path="/family" element={<Family />} />
-        <Route path="/profile" element={<Account />} />
       </Route>
+
+      {/* ✅ Novo Settings com sidebar e subrotas */}
+        <Route path="/settings" element={<SettingsLayout />}>
+          <Route index element={<Navigate to="profile" replace />} />
+          <Route path="profile" element={<Account />} />
+          <Route path="family" element={<Family />} />
+          {/* podes ir adicionando: billing, security, notifications… */}
+          {/* <Route path="billing" element={<Billing />} /> */}
+          {/* <Route path="security" element={<Security />} /> */}
+        </Route>
+
+        {/* Legacy (se ainda tiveres links antigos) */}
+        <Route path="/profile" element={<Navigate to="/settings/profile" replace />} />
+
     </Routes>
   );
 }

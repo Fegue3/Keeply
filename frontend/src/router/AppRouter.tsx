@@ -24,6 +24,7 @@ import AuthLayout from "../auth/AuthLayout";
 // Settings
 import SettingsLayout from "../pages/settings/SettingsLayout";
 import Account from "../pages/AccountSettings";
+import SecuritySettings from "../pages/SecuritySettings";
 
 export default function AppRouter() {
   const AppLayout = () => (
@@ -64,7 +65,7 @@ export default function AppRouter() {
           <Route path="family" element={<Family />} />
           {/* podes ir adicionando: billing, security, notifications… */}
           {/* <Route path="billing" element={<Billing />} /> */}
-          {/* <Route path="security" element={<Security />} /> */}
+          { <Route path="security" element={<SecuritySettings />} /> }
         </Route>
 
         {/* Legacy (se ainda tiveres links antigos) */}

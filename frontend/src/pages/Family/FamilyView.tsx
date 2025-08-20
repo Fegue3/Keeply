@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "../../api/client";
 import FamilyAvatar from "./FamilyAvatar";
 import RemoveMemberWidget from "../../components/RemoveMemberWidget";
-import TransferOwnershipWidget from "../../components/TransferOwnershipWidget"; // <-- NOVO
+import RoleManagerWidget from "../../components/RoleManagerWidget";
+import TransferOwnerWidget from "../../components/TransferOwnershipWidget";
 import "./family.css";
+
+type Role = "admin" | "member" | "parent" | "guardian";
 
 type Member = {
   userId: string;
-  role: "admin" | "member" | "parent" | "guardian";
+  role: Role;
   joinedAt?: string;
   name?: string | null;
   email?: string | null;
@@ -39,7 +42,8 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
 
   // modais
   const [removeOpen, setRemoveOpen] = useState(false);
-  const [transferOpen, setTransferOpen] = useState(false); // <-- NOVO
+  const [rolesOpen, setRolesOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
 
   useEffect(() => {
     let cancel = false;
@@ -72,9 +76,11 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
   const mySub = getMySub();
 
   const me = members.find(m => m.userId === mySub) || null;
-  const iAmAdmin = !!me && ["admin", "parent", "guardian"].includes(me.role);
-  const canRemove = iAmAdmin && members.length > 1;
-  const canTransfer = iAmAdmin && members.length > 1;
+
+  // Gestores: admin, parent, guardian
+  const isManager = !!me && ["admin","parent","guardian"].includes(me.role);
+  // Zona perigosa só admin
+  const isOwnerAdmin = !!me && me.role === "admin";
 
   async function createInvite() {
     setInviteBusy(true);
@@ -105,9 +111,9 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
     });
   }
 
-  // perigosas
+  // == Ações perigosas ==
   async function deleteFamily() {
-    if (!iAmAdmin) return;
+    if (!isOwnerAdmin) return;
     if (!window.confirm("⚠️ Isto vai apagar a família e todos os dados associados. Continuar?")) return;
     setDangerBusy(true);
     setDangerErr(null);
@@ -126,7 +132,7 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
 
   async function leaveFamily() {
     if (!mySub) return;
-    if (iAmAdmin) return;
+    if (isOwnerAdmin) return; // admins não saem por aqui
     if (!window.confirm("Queres mesmo sair desta família?")) return;
 
     setDangerBusy(true);
@@ -143,6 +149,27 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
       setDangerBusy(false);
     }
   }
+
+  // callbacks dos modais
+  const handleRemoved = (userId: string) => {
+    setMembers(prev => prev.filter(m => m.userId !== userId));
+    setRemoveOpen(false);
+  };
+
+  const handleRoleChanged = (userId: string, newRole: Role) => {
+    setMembers(prev => prev.map(m => m.userId === userId ? { ...m, role: newRole } : m));
+  };
+
+  const handleTransferred = (newOwnerUserId: string) => {
+    setMembers(prev =>
+      prev.map(m =>
+        m.userId === newOwnerUserId
+          ? { ...m, role: "admin" }
+          : (m.userId === mySub ? { ...m, role: "member" } : m)
+      )
+    );
+    setTransferOpen(false);
+  };
 
   return (
     <div className="fam__container">
@@ -201,87 +228,130 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
         </div>
       </section>
 
-      {/* ===== Admin Zone ===== */}
+      {/* ===== Admin Privileges / Danger Zone ===== */}
       <section className="fam__section keeply-adminzone">
         <div className="keeply-adminzone__header">
           <h2>Admin Privileges</h2>
-          <span className="chip">{iAmAdmin ? "Apenas administradores" : "Opções da conta"}</span>
+          <span className="chip">{isManager ? "Apenas administradores" : "Opções da conta"}</span>
         </div>
 
         <div className="keeply-adminzone__rows">
 
-          {/* Convidar */}
-          <div className="keeply-adminzone__row">
-            <div className="keeply-adminzone__text">
-              <div className="keeply-adminzone__title">Convidar membro</div>
-              <div className="keeply-adminzone__desc">
-                Gera um código de convite para adicionar novos utilizadores à família.
-              </div>
-              {inviteCode && (
-                <div className="keeply-adminzone__invite">
-                  <div className="invite__code" title="Clique para copiar" onClick={copyInvite}>
-                    {inviteCode}
-                  </div>
-                  <button className="btn" onClick={copyInvite}>{copied ? "Copiado!" : "Copiar"}</button>
+          {/* Convidar membro */}
+          {isManager && (
+            <div className="keeply-adminzone__row">
+              <div className="keeply-adminzone__text">
+                <div className="keeply-adminzone__title">Convidar membro</div>
+                <div className="keeply-adminzone__desc">
+                  Gera um código de convite para adicionar novos utilizadores à família.
                 </div>
-              )}
-              {inviteErr && <div className="alert alert--error" style={{ marginTop: 8 }}>{inviteErr}</div>}
-            </div>
-            <div className="keeply-adminzone__action">
-              {iAmAdmin ? (
-                <button className="btn btn--ghost keeply-adminzone__btn" onClick={createInvite} disabled={inviteBusy}>
+                {inviteCode && (
+                  <div className="keeply-adminzone__invite">
+                    <div className="invite__code" title="Clique para copiar" onClick={copyInvite}>
+                      {inviteCode}
+                    </div>
+                    <button className="btn" onClick={copyInvite}>{copied ? "Copiado!" : "Copiar"}</button>
+                  </div>
+                )}
+                {inviteErr && <div className="alert alert--error" style={{ marginTop: 8 }}>{inviteErr}</div>}
+              </div>
+
+              <div className="keeply-adminzone__action">
+                <button
+                  className="btn btn--ghost keeply-adminzone__btn"
+                  onClick={createInvite}
+                  disabled={inviteBusy}
+                  title="Gerar código de convite"
+                >
                   {inviteBusy ? "A gerar…" : "Gerar convite"}
                 </button>
-              ) : (<button className="btn btn--ghost" disabled>Sem permissões</button>)}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Remover */}
-          {canRemove && (
+          {/* Remover membro (abre modal) */}
+          {isManager && members.length > 1 && (
             <div className="keeply-adminzone__row">
               <div className="keeply-adminzone__text">
                 <div className="keeply-adminzone__title">Remover membros</div>
-                <div className="keeply-adminzone__desc">Escolhe quem remover. Não podes remover a tua conta.</div>
+                <div className="keeply-adminzone__desc">
+                  Abre o seletor para escolher quem remover. Não podes remover a tua própria conta.
+                </div>
               </div>
               <div className="keeply-adminzone__action">
-                <button className="btn btn--ghost keeply-adminzone__btn" onClick={() => setRemoveOpen(true)}>
+                <button
+                  className="btn btn--ghost keeply-adminzone__btn"
+                  onClick={() => setRemoveOpen(true)}
+                >
                   Remover membro
                 </button>
               </div>
             </div>
           )}
 
-          {/* Transferir propriedade */}
-          {canTransfer && (
-            <div className="keeply-adminzone__row keeply-adminzone__row--danger">
+          {/* Gerir papéis (abre modal) */}
+          {isManager && (
+            <div className="keeply-adminzone__row">
               <div className="keeply-adminzone__text">
-                <div className="keeply-adminzone__title">Transferir propriedade</div>
+                <div className="keeply-adminzone__title">Gerir papéis</div>
                 <div className="keeply-adminzone__desc">
-                  Passa a administração para outro membro. O teu papel torna‑se <strong>member</strong>.
+                  Define <strong>parent</strong>, <strong>guardian</strong> ou <strong>member</strong> para cada utilizador.
                 </div>
               </div>
               <div className="keeply-adminzone__action">
-                <button className="btn btn--ghost keeply-adminzone__btn" onClick={() => setTransferOpen(true)}>
+                <button
+                  className="btn btn--ghost keeply-adminzone__btn"
+                  onClick={() => setRolesOpen(true)}
+                >
+                  Gerir papéis
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Transferir propriedade (admin only) */}
+          {isOwnerAdmin && members.length > 1 && (
+            <div className="keeply-adminzone__row">
+              <div className="keeply-adminzone__text">
+                <div className="keeply-adminzone__title">Transferir propriedade</div>
+                <div className="keeply-adminzone__desc">
+                  Passa o papel de <strong>admin</strong> para outro membro. O teu papel passa a <strong>member</strong>.
+                </div>
+              </div>
+              <div className="keeply-adminzone__action">
+                <button
+                  className="btn btn--ghost keeply-adminzone__btn"
+                  onClick={() => setTransferOpen(true)}
+                >
                   Transferir propriedade
                 </button>
               </div>
             </div>
           )}
 
-          {/* Zona perigosa: apagar/sair */}
+          {/* Zona perigosa */}
           <div className="keeply-adminzone__row keeply-adminzone__row--danger">
             <div className="keeply-adminzone__text">
               <div className="keeply-adminzone__title">Zona perigosa</div>
               <div className="keeply-adminzone__desc">Ações irreversíveis. Tem cuidado.</div>
               {dangerErr && <div className="alert alert--error" style={{ marginTop: 8 }}>{dangerErr}</div>}
             </div>
+            
             <div className="keeply-adminzone__action">
-              {iAmAdmin ? (
-                <button className="btn btn--ghost keeply-adminzone__btn" onClick={deleteFamily} disabled={dangerBusy}>
+              {isOwnerAdmin ? (
+                <button
+                  className="btn btn--ghost keeply-adminzone__btn"
+                  onClick={deleteFamily}
+                  disabled={dangerBusy}
+                >
                   {dangerBusy ? "A apagar…" : "Apagar família"}
                 </button>
               ) : (
-                <button className="btn btn--ghost keeply-adminzone__btn" onClick={leaveFamily} disabled={dangerBusy}>
+                <button
+                  className="btn btn--ghost keeply-adminzone__btn"
+                  onClick={leaveFamily}
+                  disabled={dangerBusy}
+                >
                   {dangerBusy ? "A sair…" : "Sair da família"}
                 </button>
               )}
@@ -290,35 +360,36 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
         </div>
       </section>
 
-      {/* Modais */}
+      {/* Modal de remoção */}
       {removeOpen && (
         <RemoveMemberWidget
           familyId={family.familyId}
           members={members}
           mySub={mySub}
           onClose={() => setRemoveOpen(false)}
-          onRemoved={(userId: string) => {
-            setMembers(prev => prev.filter(m => m.userId !== userId));
-            setRemoveOpen(false);
-          }}
+          onRemoved={handleRemoved}
         />
       )}
 
+      {/* Modal de papéis */}
+      {rolesOpen && (
+        <RoleManagerWidget
+          familyId={family.familyId}
+          members={members}
+          mySub={mySub}
+          onClose={() => setRolesOpen(false)}
+          onRoleChanged={handleRoleChanged}
+        />
+      )}
+
+      {/* Modal de transferir propriedade */}
       {transferOpen && (
-        <TransferOwnershipWidget
+        <TransferOwnerWidget
           familyId={family.familyId}
           members={members}
           mySub={mySub}
           onClose={() => setTransferOpen(false)}
-          onTransferred={(newOwnerUserId: string) => {
-            setMembers(prev =>
-              prev.map(m =>
-                m.userId === newOwnerUserId ? { ...m, role: "admin" } :
-                m.userId === mySub ? { ...m, role: "member" } : m
-              )
-            );
-            setTransferOpen(false);
-          }}
+          onTransferred={handleTransferred}
         />
       )}
     </div>

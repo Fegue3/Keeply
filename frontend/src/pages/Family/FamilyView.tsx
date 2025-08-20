@@ -40,7 +40,7 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
   const [dangerErr, setDangerErr] = useState<string | null>(null);
   const [dangerBusy, setDangerBusy] = useState(false);
 
-  // modais
+  // modals
   const [removeOpen, setRemoveOpen] = useState(false);
   const [rolesOpen, setRolesOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
@@ -54,7 +54,7 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
         const data = await apiFetch<{ familyId: string; members: Member[] }>("/families/users");
         if (!cancel) setMembers(data.members || []);
       } catch (e: any) {
-        if (!cancel) setMembersError(e.message || "Não foi possível carregar os membros.");
+        if (!cancel) setMembersError(e.message || "Could not load members.");
       } finally {
         if (!cancel) setMembersLoading(false);
       }
@@ -77,10 +77,10 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
 
   const me = members.find(m => m.userId === mySub) || null;
 
-  // Gestores: admin, parent, guardian
-  const isManager = !!me && ["admin","parent","guardian"].includes(me.role);
-  // Zona perigosa só admin
-  const isOwnerAdmin = !!me && me.role === "admin";
+  // Managers: admin, parent, guardian
+  const isOwnerAdmin = !!me && me.role === "admin";         // owner/admin
+const isManager = !!me && ["admin","parent","guardian"].includes(me.role); // keep for other actions if you want
+const canManageRoles = isOwnerAdmin;                       // <-- roles are admin-only
 
   async function createInvite() {
     setInviteBusy(true);
@@ -91,12 +91,12 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
         method: "POST",
         body: JSON.stringify({ familyId: family.familyId, type: "code" })
       });
-      if (!res.code) throw new Error("O backend não devolveu código.");
+      if (!res.code) throw new Error("Backend did not return an invite code.");
       setInviteCode(res.code);
     } catch (e: any) {
       const msg =
         (e?.bodyText && (() => { try { return JSON.parse(e.bodyText).message; } catch { return null; } })()) ||
-        e?.message || "Não foi possível gerar convite.";
+        e?.message || "Could not generate invite.";
       setInviteErr(msg);
     } finally {
       setInviteBusy(false);
@@ -111,10 +111,10 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
     });
   }
 
-  // == Ações perigosas ==
+  // == Dangerous actions ==
   async function deleteFamily() {
     if (!isOwnerAdmin) return;
-    if (!window.confirm("⚠️ Isto vai apagar a família e todos os dados associados. Continuar?")) return;
+    if (!window.confirm("⚠️ This will delete the family and all associated data. Continue?")) return;
     setDangerBusy(true);
     setDangerErr(null);
     try {
@@ -123,7 +123,7 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
     } catch (e: any) {
       const msg =
         (e?.bodyText && (() => { try { return JSON.parse(e.bodyText).message; } catch { return null; } })()) ||
-        e?.message || "Não foi possível apagar a família.";
+        e?.message || "Could not delete the family.";
       setDangerErr(msg);
     } finally {
       setDangerBusy(false);
@@ -132,8 +132,8 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
 
   async function leaveFamily() {
     if (!mySub) return;
-    if (isOwnerAdmin) return; // admins não saem por aqui
-    if (!window.confirm("Queres mesmo sair desta família?")) return;
+    if (isOwnerAdmin) return; // admins don't leave here
+    if (!window.confirm("Do you really want to leave this family?")) return;
 
     setDangerBusy(true);
     setDangerErr(null);
@@ -143,14 +143,14 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
     } catch (e: any) {
       const msg =
         (e?.bodyText && (() => { try { return JSON.parse(e.bodyText).message; } catch { return null; } })()) ||
-        e?.message || "Não foi possível sair da família.";
+        e?.message || "Could not leave the family.";
       setDangerErr(msg);
     } finally {
       setDangerBusy(false);
     }
   }
 
-  // callbacks dos modais
+  // modal callbacks
   const handleRemoved = (userId: string) => {
     setMembers(prev => prev.filter(m => m.userId !== userId));
     setRemoveOpen(false);
@@ -175,20 +175,20 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
     <div className="fam__container">
       <header className="fam__header">
         <div>
-          <h1 className="fam__title">{family.name || "Família"}</h1>
+          <h1 className="fam__title">{family.name || "Family"}</h1>
           <div className="fam__meta">
             <span className="tag is-static">{family.plan || "free"}</span>
             {family.createdAt && (
-              <span className="muted">Criada em {new Date(family.createdAt).toLocaleDateString()}</span>
+              <span className="muted">Created on {new Date(family.createdAt).toLocaleDateString()}</span>
             )}
           </div>
         </div>
       </header>
 
       <section className="fam__section">
-        <h2>Membros</h2>
+        <h2>Members</h2>
 
-        {membersLoading && <div className="muted">A carregar membros…</div>}
+        {membersLoading && <div className="muted">Loading members…</div>}
         {membersError && <div className="alert alert--error">{membersError}</div>}
 
         {!membersLoading && !membersError && (
@@ -203,28 +203,28 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
                     initials={m.initials || initials(m.name || m.email || m.userId)}
                   />
                   <div className="member__info">
-                    <div className="member__name">{m.name || "Utilizador"}</div>
+                    <div className="member__name">{m.name || "User"}</div>
                     {m.email && <div className="member__email" title={m.email}>{m.email}</div>}
                   </div>
                 </div>
                 <div className="member__right">
                   <span className={`badge role-${m.role === "admin" ? "admin" : "member"}`}>{m.role}</span>
-                  {m.joinedAt && <span className="member__since">desde {new Date(m.joinedAt).toLocaleDateString()}</span>}
+                  {m.joinedAt && <span className="member__since">since {new Date(m.joinedAt).toLocaleDateString()}</span>}
                 </div>
               </div>
             )) : (
-              <div className="muted">Sem membros listados.</div>
+              <div className="muted">No members listed.</div>
             )}
           </div>
         )}
       </section>
 
       <section className="fam__section">
-        <h2>Informação</h2>
+        <h2>Information</h2>
         <div className="info__grid">
           <div className="kv"><span className="kv__k">ID</span><span className="kv__v">{family.familyId || "—"}</span></div>
-          {family.description && <div className="kv"><span className="kv__k">Descrição</span><span className="kv__v">{family.description}</span></div>}
-          {family.createdBy && <div className="kv"><span className="kv__k">Criada por</span><span className="kv__v">{family.createdBy}</span></div>}
+          {family.description && <div className="kv"><span className="kv__k">Description</span><span className="kv__v">{family.description}</span></div>}
+          {family.createdBy && <div className="kv"><span className="kv__k">Created by</span><span className="kv__v">{family.createdBy}</span></div>}
         </div>
       </section>
 
@@ -232,25 +232,25 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
       <section className="fam__section keeply-adminzone">
         <div className="keeply-adminzone__header">
           <h2>Admin Privileges</h2>
-          <span className="chip">{isManager ? "Apenas administradores" : "Opções da conta"}</span>
+          <span className="chip">{isManager ? "Admins only" : "Account options"}</span>
         </div>
 
         <div className="keeply-adminzone__rows">
 
-          {/* Convidar membro */}
+          {/* Invite member */}
           {isManager && (
             <div className="keeply-adminzone__row">
               <div className="keeply-adminzone__text">
-                <div className="keeply-adminzone__title">Convidar membro</div>
+                <div className="keeply-adminzone__title">Invite member</div>
                 <div className="keeply-adminzone__desc">
-                  Gera um código de convite para adicionar novos utilizadores à família.
+                  Generate an invite code to add new users to the family.
                 </div>
                 {inviteCode && (
                   <div className="keeply-adminzone__invite">
-                    <div className="invite__code" title="Clique para copiar" onClick={copyInvite}>
+                    <div className="invite__code" title="Click to copy" onClick={copyInvite}>
                       {inviteCode}
                     </div>
-                    <button className="btn" onClick={copyInvite}>{copied ? "Copiado!" : "Copiar"}</button>
+                    <button className="btn" onClick={copyInvite}>{copied ? "Copied!" : "Copy"}</button>
                   </div>
                 )}
                 {inviteErr && <div className="alert alert--error" style={{ marginTop: 8 }}>{inviteErr}</div>}
@@ -261,21 +261,21 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
                   className="btn btn--ghost keeply-adminzone__btn"
                   onClick={createInvite}
                   disabled={inviteBusy}
-                  title="Gerar código de convite"
+                  title="Generate invite code"
                 >
-                  {inviteBusy ? "A gerar…" : "Gerar convite"}
+                  {inviteBusy ? "Generating…" : "Generate invite"}
                 </button>
               </div>
             </div>
           )}
 
-          {/* Remover membro (abre modal) */}
+          {/* Remove member (opens modal) */}
           {isManager && members.length > 1 && (
             <div className="keeply-adminzone__row">
               <div className="keeply-adminzone__text">
-                <div className="keeply-adminzone__title">Remover membros</div>
+                <div className="keeply-adminzone__title">Remove members</div>
                 <div className="keeply-adminzone__desc">
-                  Abre o seletor para escolher quem remover. Não podes remover a tua própria conta.
+                  Open the selector to choose who to remove. You cannot remove your own account.
                 </div>
               </div>
               <div className="keeply-adminzone__action">
@@ -283,60 +283,64 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
                   className="btn btn--ghost keeply-adminzone__btn"
                   onClick={() => setRemoveOpen(true)}
                 >
-                  Remover membro
+                  Remove member
                 </button>
               </div>
             </div>
           )}
 
-          {/* Gerir papéis (abre modal) */}
-          {isManager && (
-            <div className="keeply-adminzone__row">
-              <div className="keeply-adminzone__text">
-                <div className="keeply-adminzone__title">Gerir papéis</div>
-                <div className="keeply-adminzone__desc">
-                  Define <strong>parent</strong>, <strong>guardian</strong> ou <strong>member</strong> para cada utilizador.
-                </div>
-              </div>
-              <div className="keeply-adminzone__action">
-                <button
-                  className="btn btn--ghost keeply-adminzone__btn"
-                  onClick={() => setRolesOpen(true)}
-                >
-                  Gerir papéis
-                </button>
-              </div>
-            </div>
-          )}
+          {/* Manage roles (opens modal) */}
+          {canManageRoles && (
+  <div className="keeply-adminzone__row">
+    <div className="keeply-adminzone__text">
+      <div className="keeply-adminzone__title">Manage roles</div>
+      <div className="keeply-adminzone__desc">
+        Set <strong>parent</strong>, <strong>guardian</strong>, or <strong>member</strong> for each user.
+      </div>
+    </div>
+    <div className="keeply-adminzone__action">
+      <button
+        className="btn btn--ghost keeply-adminzone__btn"
+        onClick={() => canManageRoles && setRolesOpen(true)}
+      >
+        Manage roles
+      </button>
+    </div>
+  </div>
+)}
 
-          {/* Transferir propriedade (admin only) */}
+          {/* ===== Danger Zone ===== */}
+
+          {/* Transfer ownership (admin only) — now inside Danger Zone */}
           {isOwnerAdmin && members.length > 1 && (
-            <div className="keeply-adminzone__row">
+            <div className="keeply-adminzone__row keeply-adminzone__row--danger">
               <div className="keeply-adminzone__text">
-                <div className="keeply-adminzone__title">Transferir propriedade</div>
+                <div className="keeply-adminzone__title">Transfer ownership</div>
                 <div className="keeply-adminzone__desc">
-                  Passa o papel de <strong>admin</strong> para outro membro. O teu papel passa a <strong>member</strong>.
+                  Transfer the <strong>admin</strong> role to another member. Your role will become <strong>member</strong>.
                 </div>
+                {dangerErr && <div className="alert alert--error" style={{ marginTop: 8 }}>{dangerErr}</div>}
               </div>
               <div className="keeply-adminzone__action">
                 <button
                   className="btn btn--ghost keeply-adminzone__btn"
                   onClick={() => setTransferOpen(true)}
+                  disabled={dangerBusy}
                 >
-                  Transferir propriedade
+                  Transfer ownership
                 </button>
               </div>
             </div>
           )}
 
-          {/* Zona perigosa */}
+          {/* Delete family / Leave family */}
           <div className="keeply-adminzone__row keeply-adminzone__row--danger">
             <div className="keeply-adminzone__text">
-              <div className="keeply-adminzone__title">Zona perigosa</div>
-              <div className="keeply-adminzone__desc">Ações irreversíveis. Tem cuidado.</div>
+              <div className="keeply-adminzone__title">Danger Zone</div>
+              <div className="keeply-adminzone__desc">Irreversible actions. Be careful.</div>
               {dangerErr && <div className="alert alert--error" style={{ marginTop: 8 }}>{dangerErr}</div>}
             </div>
-            
+
             <div className="keeply-adminzone__action">
               {isOwnerAdmin ? (
                 <button
@@ -344,7 +348,7 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
                   onClick={deleteFamily}
                   disabled={dangerBusy}
                 >
-                  {dangerBusy ? "A apagar…" : "Apagar família"}
+                  {dangerBusy ? "Deleting…" : "Delete family"}
                 </button>
               ) : (
                 <button
@@ -352,7 +356,7 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
                   onClick={leaveFamily}
                   disabled={dangerBusy}
                 >
-                  {dangerBusy ? "A sair…" : "Sair da família"}
+                  {dangerBusy ? "Leaving…" : "Leave family"}
                 </button>
               )}
             </div>
@@ -360,7 +364,7 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
         </div>
       </section>
 
-      {/* Modal de remoção */}
+      {/* Remove modal */}
       {removeOpen && (
         <RemoveMemberWidget
           familyId={family.familyId}
@@ -371,7 +375,7 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
         />
       )}
 
-      {/* Modal de papéis */}
+      {/* Roles modal */}
       {rolesOpen && (
         <RoleManagerWidget
           familyId={family.familyId}
@@ -382,7 +386,7 @@ export function FamilyView({ family, onRefresh }: { family: Family; onRefresh: (
         />
       )}
 
-      {/* Modal de transferir propriedade */}
+      {/* Transfer ownership modal */}
       {transferOpen && (
         <TransferOwnerWidget
           familyId={family.familyId}

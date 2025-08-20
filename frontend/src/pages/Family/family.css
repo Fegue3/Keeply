@@ -187,3 +187,151 @@
 }
 .member__remove:hover{ background: #ffe9eb; }
 .member__remove:disabled{ opacity:.6; cursor:not-allowed; }
+
+/* ===== Admin Zone (estilo Danger Zone do GitHub) ===== */
+.keeply-adminzone { border: 1px solid var(--keeply-border); }
+.keeply-adminzone__header{
+  display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px;
+}
+.keeply-adminzone__rows{
+  border: 1px solid var(--keeply-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--keeply-white);
+  box-shadow: 0 4px 18px var(--keeply-shadow);
+}
+.keeply-adminzone__row{
+  display:flex; align-items: center; gap: 16px;
+  padding: 18px;
+  border-top: 1px solid var(--keeply-border);
+}
+.keeply-adminzone__row:first-child{ border-top: 0; }
+.keeply-adminzone__text{ flex:1; min-width: 0; }
+.keeply-adminzone__title{ font-weight:700; margin-bottom: 4px; }
+.keeply-adminzone__desc{ color: var(--keeply-text-secondary); font-size: 14px; }
+.keeply-adminzone__action{ flex-shrink:0; }
+
+.keeply-adminzone__row:hover{
+  background: #fffdf9; /* leve, ainda na vibe do --keeply-bg */
+}
+
+/* Danger vibe (fundo suave + borda superior com o error) */
+.keeply-adminzone__row--danger{
+  background: #fff7f8;
+  border-top-color: rgba(220,53,69,.35);
+}
+
+/* Botão ghost que fica vermelho no hover (igual GitHub) */
+.keeply-adminzone__btn{
+  border-color: var(--keeply-border);
+  transition: background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.keeply-adminzone__btn:hover{
+  background: var(--keeply-error);
+  color:#fff;
+  border-color: transparent;
+  box-shadow: 0 6px 18px var(--keeply-shadow-lg);
+}
+.keeply-adminzone__btn.is-on{
+  box-shadow: 0 0 0 3px rgba(220,53,69,.18);
+}
+
+/* Convite inline dentro da linha */
+.keeply-adminzone__invite{
+  display:flex; gap:10px; align-items:center; margin-top:10px; max-width: 620px;
+}
+.keeply-adminzone__invite .invite__code{
+  background: #fffaf5;
+  border: 1px dashed var(--keeply-primary);
+  border-radius: 10px;
+  padding: 10px 12px;
+  flex: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  cursor: copy; user-select: all;
+}
+
+/* Responsivo: stack ação por baixo em ecrãs estreitos */
+@media (max-width: 640px){
+  .keeply-adminzone__row{
+    flex-direction: column; align-items: flex-start;
+  }
+  .keeply-adminzone__action{ width: 100%; }
+  .keeply-adminzone__action .btn{ width: 100%; }
+}
+
+/* ===== Ajustes de contraste para AdminZone ===== */
+.keeply-adminzone__title{
+  font-weight: 700;
+  color: var(--keeply-text); /* cor de texto mais escura */
+}
+
+.keeply-adminzone__row{
+  border-top: 1px solid var(--keeply-primary); /* usa primária escura */
+}
+
+.keeply-adminzone__row:hover{
+  background: #fdfaf7; /* tom quente, mas claro */
+}
+
+/* Danger row com fundo mais escuro */
+.keeply-adminzone__row--danger{
+  background: rgba(220,53,69,0.06); /* derivado do --keeply-error */
+  border-top: 1px solid var(--keeply-error);
+}
+.keeply-adminzone__row--danger .keeply-adminzone__title{
+  color: var(--keeply-error);
+}
+
+/* Botão danger hover fica mais intenso */
+.keeply-adminzone__btn:hover{
+  background: var(--keeply-error);
+  border-color: transparent;
+  color:#fff;
+}
+
+/* ===== AdminZone com vibe keeply-primary ===== */
+.keeply-adminzone__title{
+  font-weight: 700;
+  color: var(--keeply-primary);
+}
+
+.keeply-adminzone__row{
+  border-top: 1px solid var(--keeply-border);
+}
+.keeply-adminzone__row:first-child{
+  border-top: none;
+}
+
+.keeply-adminzone__row:hover{
+  background: rgba(164,113,72,0.05); /* castanho claro em baixa opacidade */
+}
+
+/* Botões admin normais */
+.keeply-adminzone__btn{
+  border-color: var(--keeply-primary);
+  color: var(--keeply-primary);
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.keeply-adminzone__btn:hover{
+  background: var(--keeply-primary);
+  color:#fff;
+  border-color: transparent;
+}
+
+/* Danger continua distinto */
+.keeply-adminzone__row--danger{
+  background: rgba(220,53,69,0.06);
+  border-top: 1px solid var(--keeply-error);
+}
+.keeply-adminzone__row--danger .keeply-adminzone__title{
+  color: var(--keeply-error);
+}
+.keeply-adminzone__row--danger .keeply-adminzone__btn{
+  border-color: var(--keeply-error);
+  color: var(--keeply-error);
+}
+.keeply-adminzone__row--danger .keeply-adminzone__btn:hover{
+  background: var(--keeply-error);
+  color:#fff;
+  border-color: transparent;
+}

@@ -1,3 +1,4 @@
+// src/pages/settings/SettingsLayout.tsx
 import { NavLink, Outlet, useLocation  } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
@@ -7,8 +8,7 @@ import "./SettingsLayout.css";
 const tabs = [
   { to: "/settings/profile", label: "Profile" },
   { to: "/settings/family",  label: "Family" },
-  // { to: "/settings/billing", label: "Billing" },
-  // { to: "/settings/security", label: "Security" },
+  { to: "/settings/security", label: "Security" }, 
 ];
 
 export default function SettingsLayout() {
@@ -23,10 +23,10 @@ export default function SettingsLayout() {
           <aside className="keeply-settings-sidebar" aria-label="Settings navigation">
             <div className="keeply-settings-title">Settings</div>
 
-            {/* Mobile dropdown – bonito/aesthetic */}
+            {/* Mobile dropdown */}
             <div className="keeply-settings-mobile">
-  <MobileSettingsDropdown tabs={tabs} current={current} />
-</div>
+              <MobileSettingsDropdown tabs={tabs} current={current} />
+            </div>
 
             {/* Desktop list */}
             <nav className="keeply-settings-nav">

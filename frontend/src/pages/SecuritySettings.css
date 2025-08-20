@@ -1,0 +1,37 @@
+/* src/pages/settings/SecuritySettings.css */
+.security__header { margin-bottom: 16px; }
+.security__title { font-size: 28px; line-height: 1.2; color: #3f2c1e; margin: 0 0 4px; }
+.security__subtitle { color: #7a6f66; margin: 0; }
+
+.sec-alert { padding: 10px 12px; border-radius: 12px; margin: 12px 0; font-size: 14px; }
+.sec-alert--error { background: #fef2f2; border: 1px solid #d97777; color: #7a1f1f; }
+.sec-alert--ok { background: #f4ebe3; border: 1px solid #a47148; color: #3f2c1e; }
+
+.sec-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fdfcf9;
+  border: 1px solid #eadfce;
+  border-radius: 16px;
+  padding: 16px;
+  margin: 14px 0;
+}
+.sec-card--danger {
+  background: #fff7f7;
+  border-color: #e9bcbc;
+}
+
+.sec-card__title { font-weight: 700; color: #3f2c1e; }
+.sec-card__desc { color: #7a6f66; margin-top: 4px; }
+
+.sec-btn {
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid #a47148;
+  background: transparent;
+  color: #3f2c1e;
+  cursor: pointer;
+}
+.sec-btn:disabled { opacity: .6; cursor: default; }
+.sec-btn--ghost:hover { background: #f4ebe3; }

@@ -3,7 +3,8 @@ import { Home, Package, Settings, Plus, Menu, X, User, LogOut } from 'lucide-rea
 import './Navbar.css';
 import UserPool from '../auth/UserPool';
 import UserAvatar from '../components/UserAvatar';
-import { getAuthToken, isAuthenticated } from '../utils/auth';
+// (mantemos o import antigo se precisares noutro lado, mas não usamos aqui)
+// import { getAuthToken, isAuthenticated } from '../utils/auth';
 
 import type {
   CognitoUser,
@@ -18,14 +19,6 @@ const Navbar: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const loadLocalUserData = () => {
-    const name = localStorage.getItem('keeply_user_name');
-    const initials = localStorage.getItem('keeply_user_initials');
-
-    if (name) setUserName(name);
-    if (initials) setUserInitials(initials);
-  };
-
   const getInitials = (fullName: string): string => {
     const parts = fullName.trim().split(' ');
     return parts.length >= 2
@@ -34,43 +27,61 @@ const Navbar: React.FC = () => {
   };
 
   useEffect(() => {
-    loadLocalUserData();
-
-    const token: any = getAuthToken();
-    if (token && isAuthenticated()) {
-      setIsLoggedIn(true);
-      if (!userName && token.name) setUserName(token.name as string);
-      if (!userInitials && token.initials) setUserInitials(token.initials as string);
+    // ✅ Regra pedida: se NÃO houver token, garante estado de logout e pára aqui.
+    const rawToken = localStorage.getItem('keeply_token');
+    if (!rawToken) {
+      setIsLoggedIn(false);
+      setUserName('');
+      setUserInitials('');
+      return;
     }
 
-    // Tipar currentUser
+    // ❌ Removido: não marcamos login só por haver token/localStorage
+    // const token: any = getAuthToken();
+    // if (token && isAuthenticated()) { ... }
+
+    // Verifica sessão Cognito (se existir utilizador corrente)
     const currentUser = (UserPool as any).getCurrentUser() as CognitoUser | null;
-    if (currentUser) {
-      currentUser.getSession((err: unknown, session: CognitoUserSession | null) => {
-        if (err || !session?.isValid()) return;
-
-        currentUser.getUserAttributes(
-          (attrErr: unknown, attributes: CognitoUserAttribute[] | undefined) => {
-            if (attrErr || !attributes) return;
-
-            const attrMap: Record<string, string> = {};
-            attributes.forEach((attr) => {
-              attrMap[attr.getName()] = attr.getValue();
-            });
-
-            const name = attrMap.name || 'User';
-            const initials = attrMap['custom:initials'] || getInitials(name);
-
-            setIsLoggedIn(true);
-            setUserName(name);
-            setUserInitials(initials);
-
-            localStorage.setItem('keeply_user_name', name);
-            localStorage.setItem('keeply_user_initials', initials);
-          }
-        );
-      });
+    if (!currentUser) {
+      setIsLoggedIn(false);
+      setUserName('');
+      setUserInitials('');
+      return;
     }
+
+    currentUser.getSession((err: unknown, session: CognitoUserSession | null) => {
+      if (err || !session?.isValid()) {
+        setIsLoggedIn(false);
+        setUserName('');
+        setUserInitials('');
+        return;
+      }
+
+      currentUser.getUserAttributes(
+        (attrErr: unknown, attributes: CognitoUserAttribute[] | undefined) => {
+          if (attrErr || !attributes) {
+            setIsLoggedIn(true);
+            return;
+          }
+
+          const attrMap: Record<string, string> = {};
+          attributes.forEach((attr) => {
+            attrMap[attr.getName()] = attr.getValue();
+          });
+
+          const name = attrMap.name || 'User';
+          const initials = attrMap['custom:initials'] || getInitials(name);
+
+          setIsLoggedIn(true);
+          setUserName(name);
+          setUserInitials(initials);
+
+          // opcional: guardar só para UI (não decide login)
+          localStorage.setItem('keeply_user_name', name);
+          localStorage.setItem('keeply_user_initials', initials);
+        }
+      );
+    });
 
     const handleUserUpdated = (e: Event) => {
       const customEvent = e as CustomEvent<{ name?: string; initials?: string }>;
@@ -81,7 +92,6 @@ const Navbar: React.FC = () => {
 
     window.addEventListener('keeply:userUpdated', handleUserUpdated);
     return () => window.removeEventListener('keeply:userUpdated', handleUserUpdated);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
@@ -89,16 +99,22 @@ const Navbar: React.FC = () => {
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   const logout = () => {
+    // limpa tudo o que controla o estado de login
     localStorage.removeItem('keeply_token');
     localStorage.removeItem('keeply_user_name');
     localStorage.removeItem('keeply_user_initials');
+
+    // termina sessão Cognito (se existir)
     const currentUser = (UserPool as any).getCurrentUser() as CognitoUser | null;
     if (currentUser) currentUser.signOut();
 
+    // reflete no UI já
     setIsLoggedIn(false);
     setUserName('');
     setUserInitials('');
-    window.location.href = '/login';
+
+    // redireciona
+    window.location.replace('/login');
   };
 
   return (
@@ -121,17 +137,17 @@ const Navbar: React.FC = () => {
                 <Plus size={16} /> Add Item
               </a>
               <div className="user-menu">
-  <button className="user-avatar" onClick={toggleDropdown} style={{ padding: 0, border: "none", background: "transparent" }}>
-    <UserAvatar size={40} initials={userInitials} />
-  </button>
-  <div className={`dropdown ${isDropdownOpen ? 'open' : ''}`}>
-    <a href="/settings/profile" className="dropdown-item"><User size={16} /> Profile</a>
-    <div className="dropdown-separator"></div>
-    <a href="#" onClick={(e) => { e.preventDefault(); logout(); }} className="dropdown-item">
-      <LogOut size={16} /> Logout
-    </a>
-  </div>
-</div>
+                <button className="user-avatar" onClick={toggleDropdown} style={{ padding: 0, border: "none", background: "transparent" }}>
+                  <UserAvatar size={40} initials={userInitials} />
+                </button>
+                <div className={`dropdown ${isDropdownOpen ? 'open' : ''}`}>
+                  <a href="/settings/profile" className="dropdown-item"><User size={16} /> Profile</a>
+                  <div className="dropdown-separator"></div>
+                  <a href="#" onClick={(e) => { e.preventDefault(); logout(); }} className="dropdown-item">
+                    <LogOut size={16} /> Logout
+                  </a>
+                </div>
+              </div>
             </>
           ) : (
             <>
@@ -173,7 +189,7 @@ const Navbar: React.FC = () => {
         {isLoggedIn ? (
           <div className="mobile-user-info">
             <div className="mobile-user-profile">
-              <div className="user-avatar">{<UserAvatar size={40} initials={userInitials} />}</div>
+              <div className="user-avatar"><UserAvatar size={40} initials={userInitials} /></div>
               <span>{userName}</span>
             </div>
             <div className="mobile-actions">
